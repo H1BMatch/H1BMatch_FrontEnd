@@ -24,6 +24,7 @@
     "lucide-react": "^0.446.0",
     "next": "13.5.7",
     "react": "^18",
+    "react-bootstrap": "^2.10.5",
     "react-dom": "^18",
     "react-router-dom": "^6.28.0",
     "tailwind-merge": "^2.5.2",
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
+    "@types/react-bootstrap": "^0.32.37",
     "@types/react-dom": "^18",
     "autoprefixer": "^10",
     "eslint": "^8",
