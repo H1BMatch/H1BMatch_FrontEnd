@@ -10,9 +10,9 @@ interface JobCardProps {
 
 const JobCard: React.FC<JobCardProps> = ({ job }) => {
   return (
-    <Card className="mb-3">
+    <Card className="m-3 bg-light p-2 ">
       <Card.Body>
-        <Card.Title>{job.title}</Card.Title>
+        <Card.Title>{job.title} </Card.Title>
         <Card.Subtitle className="mb-2 text-muted">{job.company}</Card.Subtitle>
         <Card.Text>{job.description}</Card.Text>
         <Card.Text>

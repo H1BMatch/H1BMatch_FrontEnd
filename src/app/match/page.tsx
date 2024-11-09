@@ -4,9 +4,13 @@ import { Job } from '@/types/Job';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Spinner } from '@nextui-org/spinner';
+import { ListGroup } from 'react-bootstrap';
+import JobCard from '@/components/JobCard';
 
-// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const API_BASE_URL = 'localhost...';
+// const API_BASE_URL = process.env.NEXT_API_BASE_URL;
+const API_BASE_URL = "http://localhost:3001/api";
+// const API_BASE_URL = 'localhost...';
+console.log(API_BASE_URL);
 
 const MatchingJobs: React.FC = () => {
   const [filters, setFilters] = useState<{ column: string; value: string }[]>(
@@ -44,9 +48,8 @@ const MatchingJobs: React.FC = () => {
           credentials: 'include', // Use 'include' if the backend requires credentials like cookies
         }
       );
-
-      setJobs(response.data);
-      console.log(response.data);
+      let jobsData =  await response.json();
+      setJobs(jobsData);
     } catch (error: any) {
       console.error('Error fetching job data:', error);
       setError('Failed to fetch jobs. Please try again later.');
@@ -97,16 +100,13 @@ const MatchingJobs: React.FC = () => {
           {error}
         </Alert>
       )}
-      {/* <ListGroup className="mt-3">
+      <ListGroup className="mt-3 p-3 bg-green">
         {jobs.map((job) => {
           return (
-            <ListGroup.Item key={job.id}>
-              <h5>{job.title}</h5>
-              <p>{job.description}</p>
-            </ListGroup.Item>
+            <JobCard key={job.id} job={job} />
           );
         })}
-      </ListGroup> */}
+      </ListGroup>
     </section>
   );
 };
