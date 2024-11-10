@@ -1,117 +1,121 @@
+
+// src/app/matchingJobs.tsx
 'use client';
-import React, { useState } from 'react';
+
+import React, { useState, useCallback } from 'react';
 import { Job } from '@/types/Job';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Spinner } from '@nextui-org/spinner';
+import JobFilterForm from '@/components/JobFilterForm';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
-// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const API_BASE_URL = 'localhost...';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
 
-const MatchingJobs: React.FC = () => {
-  const [filters, setFilters] = useState<{ column: string; value: string }[]>(
-    []
-  );
+interface Filters {
+  title: string;
+  company: string;
+  city: string;
+  state: string;
+  country: string;
+  job_type: string;
+  is_remote: boolean;
+  date_posted: string; // days ago
+  min_salary: string;
+  max_salary: string;
+  job_level: string;
+  company_industry: string;
+  is_sponsor: boolean;
+}
+
+export default function MatchingJobs() {
+  const [filters, setFilters] = useState<Filters>({
+    title: '',
+    company: '',
+    city: '',
+    state: '',
+    country: '',
+    job_type: '',
+    is_remote: false,
+    date_posted: '',
+    min_salary: '',
+    max_salary: '',
+    job_level: '',
+    company_industry: '',
+    is_sponsor: false,
+  });
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleAddFilter = () => {
-    setFilters([...filters, { column: '', value: '' }]);
-  };
-
-  const handleFilterChange = (
-    index: number,
-    field: 'column' | 'value',
-    value: string
-  ) => {
-    const newFilters = [...filters];
-    newFilters[index][field] = value;
+  const handleFilterChange = useCallback((newFilters: Filters) => {
     setFilters(newFilters);
-  };
+  }, []);
 
-  const fetchMatchingJobs = async () => {
+  const fetchMatchingJobs = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const queryParams = new URLSearchParams({
-        filters: JSON.stringify(filters),
+      const queryParams = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== '' && value !== null && value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
       });
-
       const response = await fetch(
         `${API_BASE_URL}/jobs/match?${queryParams}`,
         {
-          credentials: 'include', // Use 'include' if the backend requires credentials like cookies
+          credentials: 'include',
         }
       );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      setJobs(response.data);
-      console.log(response.data);
-    } catch (error: any) {
+      const data = await response.json();
+      setJobs(data);
+    } catch (error) {
       console.error('Error fetching job data:', error);
-      setError('Failed to fetch jobs. Please try again later.');
+      setError(
+        'Failed to fetch jobs. Please check your network connection and try again.'
+      );
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   return (
-    <section className="mt-5">
-      <h1>Find Matching Jobs</h1>
-      <form>
-        {filters.map((filter, index) => (
-          <div key={index} className="mb-3">
-            <label>Filter {index + 1}</label>
-            {/* <Form.Control
-              type="text"
-              placeholder="Column"
-              value={filter.column}
-              onChange={(e) =>
-                handleFilterChange(index, 'column', e.target.value)
-              }
-              className="mb-2"
-            />
-            <Form.Control
-              type="text"
-              placeholder="Value"
-              value={filter.value}
-              onChange={(e) =>
-                handleFilterChange(index, 'value', e.target.value)
-              }
-            /> */}
-          </div>
-        ))}
-        <Button variant="secondary" onClick={handleAddFilter} className="mb-3">
-          Add Filter
-        </Button>
-        <Button
-          variant="default"
-          onClick={fetchMatchingJobs}
-          disabled={loading}
-        >
-          {loading ? <Spinner size="sm" /> : 'Search'}
-        </Button>
-      </form>
+    <section className="mt-5 space-y-6">
+      <h1 className="text-2xl font-bold">Find Matching Jobs</h1>
+      <JobFilterForm
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onSearch={fetchMatchingJobs}
+        loading={loading}
+      />
       {error && (
-        <Alert variant={'destructive'} className="mt-3">
-          {error}
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      {/* <ListGroup className="mt-3">
-        {jobs.map((job) => {
-          return (
-            <ListGroup.Item key={job.id}>
-              <h5>{job.title}</h5>
-              <p>{job.description}</p>
-            </ListGroup.Item>
-          );
-        })}
-      </ListGroup> */}
+      <JobList jobs={jobs} />
     </section>
   );
-};
-{
-  /* Add other job details here */
 }
 
-export default MatchingJobs;
+function JobList({ jobs }: { jobs: Job[] }) {
+  if (jobs.length === 0) {
+    return <p>No jobs found. Try adjusting your filters.</p>;
+  }
+
+  return (
+    <ul className="space-y-4">
+      {jobs.map((job) => (
+        <li key={job.id} className="border p-4 rounded-md">
+          <h2 className="text-xl font-semibold">{job.title}</h2>
+          <p className="mt-2">{job.description}</p>
+          {/* Add other job details here */}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
