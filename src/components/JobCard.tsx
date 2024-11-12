@@ -4,6 +4,8 @@ import React from 'react';
 import './JobCard.css';
 import { Job } from '../types/Job';
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 interface JobCardProps {
   job: Job;
 }

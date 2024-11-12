@@ -15,6 +15,7 @@ export interface Job {
     max_amount?: number;
     currency?: string;
     salary_source?: string;
+    is_sponsor?: boolean;
     date_posted: string; // ISO date string
     emails?: string;
     is_remote?: boolean;
