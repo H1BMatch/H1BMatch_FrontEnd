@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'; // Ensure Button is exported co
 import { Briefcase, MapPin, Building, Calendar, DollarSign, GraduationCap } from 'lucide-react';
 
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 interface JobCardProps {
  job?: Job;
 }

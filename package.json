@@ -20,6 +20,7 @@
     "@radix-ui/react-slot": "^1.1.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "framer-motion": "^11.9.0",
     "lucide-react": "^0.446.0",
     "next": "13.5.7",
@@ -28,7 +29,8 @@
     "react-dom": "^18",
     "react-router-dom": "^6.28.0",
     "tailwind-merge": "^2.5.2",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "yarn": "^1.22.22"
   },
   "devDependencies": {
     "@types/node": "^20",
