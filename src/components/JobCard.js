@@ -2,6 +2,7 @@
 // import './jobCard.css';
 // import { Card } from 'react-bootstrap';
 
+
 const JobCard = ({ job }) => {
     return (
         <Card className='mb-2 p-1 dark shadow-lg rounded'
