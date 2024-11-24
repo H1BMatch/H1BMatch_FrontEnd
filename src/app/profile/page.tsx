@@ -12,6 +12,8 @@ import { useAuth } from "@clerk/clerk-react";
 import * as pdfjs from "pdfjs-dist";
 const API_BASE_URL = "http://localhost:3001/api";
 
+
+
 // Initialize PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.mjs`;
 
@@ -45,6 +47,8 @@ export default function ProfilePage() {
   const [isLoadingPdf, setIsLoadingPdf] = useState(false);
   const [name, setName] = useState("FirstName LastName");
   const [profilePictureLink, setProfilePictureLink] = useState("");
+  const [userBio, setUserBio] = useState(""); 
+  
 
   // reference for the file input
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -72,7 +76,7 @@ export default function ProfilePage() {
   }, []);
 
   const getUserData = async () => {
-    const response = await fetch(`${API_BASE_URL}/users/profile`, {
+    const response = await fetch(`${API_BASE_URL}/user`, {
       credentials: 'include',
     });
     if (!response.ok) {
@@ -105,17 +109,16 @@ export default function ProfilePage() {
           setPdfContent(text);
           //set the extracted pdf content to the database
           const response = await fetch(
-            `${API_BASE_URL}/users/update-resume`,
+            `${API_BASE_URL}/users/resume`,
             {
               method: 'POST',
               headers: {
               'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ newResume: text }),
+              body: JSON.stringify({ resume: text }),
               credentials: 'include',
             }
             );
-
             console.log("Response:", response);
             if (response.ok) {
               alert("Resume uploaded successfully");
