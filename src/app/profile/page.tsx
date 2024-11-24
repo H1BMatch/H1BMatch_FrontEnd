@@ -1,18 +1,17 @@
 "use client";
 
-import { useState, useRef,useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin, FileText, Upload, Edit2, X } from 'lucide-react';
+import { MapPin, FileText, Upload, Edit2, X, Camera } from 'lucide-react';
 import { useAuth } from "@clerk/clerk-react";
 import * as pdfjs from "pdfjs-dist";
+
 const API_BASE_URL = "http://localhost:3001/api";
-
-
 
 // Initialize PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.mjs`;
@@ -47,11 +46,11 @@ export default function ProfilePage() {
   const [isLoadingPdf, setIsLoadingPdf] = useState(false);
   const [name, setName] = useState("FirstName LastName");
   const [profilePictureLink, setProfilePictureLink] = useState("");
-  const [userBio, setUserBio] = useState(""); 
-  
+  const [isEditingProfilePicture, setIsEditingProfilePicture] = useState(false);
 
-  // reference for the file input
+  // references for file inputs
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const profilePictureInputRef = useRef<HTMLInputElement>(null);
 
   async function getContent(src: ArrayBuffer) {
     const doc = await pdfjs.getDocument({ data: src }).promise;
@@ -76,7 +75,7 @@ export default function ProfilePage() {
   }, []);
 
   const getUserData = async () => {
-    const response = await fetch(`${API_BASE_URL}/user`, {
+    const response = await fetch(`${API_BASE_URL}/profile`, {
       credentials: 'include',
     });
     if (!response.ok) {
@@ -93,6 +92,7 @@ export default function ProfilePage() {
     // setBio(data.bio);
     // setAbout(data.about);
     // setPdfContent(data.resume); 
+    console.log("User Data:", JSON.stringify(data) + "profile picture link is " + data.profile_picture_link);
     setProfilePictureLink(data.profile_picture_link);
   };
 
@@ -137,8 +137,39 @@ export default function ProfilePage() {
     }
   };
 
+  const handleProfilePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('profilePicture', file);
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/upload-profile-picture`, {
+          method: 'POST',
+          body: formData,
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setProfilePictureLink(data.profilePictureLink);
+          setIsEditingProfilePicture(false);
+        } else {
+          alert("Error uploading profile picture. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error uploading profile picture:", error);
+        alert("Error uploading profile picture. Please try again.");
+      }
+    }
+  };
+
   const triggerFileInputClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const triggerProfilePictureUpload = () => {
+    profilePictureInputRef.current?.click();
   };
 
   const handleAddSkill = () => {
@@ -158,10 +189,28 @@ export default function ProfilePage() {
       <Card>
         <CardHeader>
           <div className="flex items-center space-x-4">
-            <Avatar className="h-20 w-20 md:h-32 md:w-32">
-              <AvatarImage src={profilePictureLink} alt="Robo Hash" />
-              <AvatarFallback>JD</AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className="h-20 w-20 md:h-32 md:w-32">
+                <AvatarImage src={profilePictureLink} alt="Profile Picture" />
+                <AvatarFallback>{name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+              </Avatar>
+              <Button
+                variant="secondary"
+                size="icon"
+                className="absolute bottom-0 right-0"
+                onClick={triggerProfilePictureUpload}
+              >
+                <Camera className="h-4 w-4" />
+                <span className="sr-only">Change profile picture</span>
+              </Button>
+              <Input
+                ref={profilePictureInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleProfilePictureUpload}
+                className="hidden"
+              />
+            </div>
             <div>
               <CardTitle className="text-2xl">{name}</CardTitle>
               {isEditingJobTitle ? (
@@ -336,16 +385,6 @@ export default function ProfilePage() {
               Reading PDF content...
             </p>
           )}
-          {/* {pdfContent && !isLoadingPdf && (
-            <div className="mt-4">
-              <h4 className="font-semibold mb-2">Extracted Content:</h4>
-              <div className="max-h-60 overflow-y-auto border rounded-md p-4">
-                <p className="text-sm text-muted-foreground whitespace-pre-line">
-                  {pdfContent}
-                </p>
-              </div>
-            </div>
-          )} */}
         </CardContent>
       </Card>
 
@@ -371,7 +410,7 @@ export default function ProfilePage() {
                 value={about}
                 onChange={(e) => setAbout(e.target.value)}
                 rows={4}
-              />
+/>
               <Button onClick={() => setIsEditingAbout(false)}>Save</Button>
             </div>
           ) : (
