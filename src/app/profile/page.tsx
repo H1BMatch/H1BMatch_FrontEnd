@@ -1,16 +1,19 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef,useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin, FileText, Upload, Edit2, Check, X } from "lucide-react";
+import { MapPin, FileText, Upload, Edit2, X } from 'lucide-react';
 import { useAuth } from "@clerk/clerk-react";
-import { useRouter } from "next/router";
+import * as pdfjs from "pdfjs-dist";
+const API_BASE_URL = "http://localhost:3001/api";
 
+// Initialize PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.mjs`;
 
 export default function ProfilePage() {
   const { isSignedIn } = useAuth();
@@ -38,32 +41,102 @@ export default function ProfilePage() {
   const [city, setCity] = useState("San Francisco, CA");
   const [isEditingJobTitle, setIsEditingJobTitle] = useState(false);
   const [isEditingCity, setIsEditingCity] = useState(false);
+  const [pdfContent, setPdfContent] = useState<string>("");
+  const [isLoadingPdf, setIsLoadingPdf] = useState(false);
+  const [name, setName] = useState("FirstName LastName");
+  const [profilePictureLink, setProfilePictureLink] = useState("");
 
   // reference for the file input
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleResumeUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  async function getContent(src: ArrayBuffer) {
+    const doc = await pdfjs.getDocument({ data: src }).promise;
+    const page = await doc.getPage(1);
+    return await page.getTextContent();
+  }
+
+  async function getItems(src: ArrayBuffer) {
+    console.log("Reading PDF file");
+    const content = await getContent(src);
+    let fullText = '';
+    content.items.forEach((item: any) => {
+      if (item.str) {
+        fullText += item.str + ' ';
+      }
+    });
+    return fullText.trim();
+  }
+
+  useEffect(() => {
+    getUserData();
+  }, []);
+
+  const getUserData = async () => {
+    const response = await fetch(`${API_BASE_URL}/users/profile`, {
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      console.error("Error fetching user data");
+      return;
+    } 
+    console.log("Response:", response);
+    const data = await response.json();
+    console.log("User Data:", data);
+    setName(data.name);
+    // setJobTitle(data.jobTitle);
+    // setCity(data.city);
+    // setSkills(data.skills);
+    // setBio(data.bio);
+    // setAbout(data.about);
+    // setPdfContent(data.resume); 
+    setProfilePictureLink(data.profile_picture_link);
+  };
+
+  const handleResumeUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setResumeFile(file);
-      setUploadTime(new Date().toLocaleString());
+      if (file.type === "application/pdf") {
+        setResumeFile(file);
+        setUploadTime(new Date().toLocaleString());
+        setIsLoadingPdf(true);
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const text = await getItems(arrayBuffer);
+          setPdfContent(text);
+          //set the extracted pdf content to the database
+          const response = await fetch(
+            `${API_BASE_URL}/users/update-resume`,
+            {
+              method: 'POST',
+              headers: {
+              'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ newResume: text }),
+              credentials: 'include',
+            }
+            );
 
-      // read the file content
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const content = e.target?.result;       
-        console.log(content);
-      };
+            console.log("Response:", response);
+            if (response.ok) {
+              alert("Resume uploaded successfully");
+            } else {
+              alert("Error uploading resume. Please try again.");
+            }
+        } catch (error) {
+          console.error("Error reading PDF:", error);
+          alert("Error reading PDF file. Please try again.");
+        } finally {
+          setIsLoadingPdf(false);
+        }
+      } else {
+        alert("Please upload a PDF file");
+      }
     }
-    // Reset the input value to allow uploading the same file again
-    event.target.value = "";
   };
+
   const triggerFileInputClick = () => {
     fileInputRef.current?.click();
-    console.log("triggerFileInputClick");
   };
-
-
 
   const handleAddSkill = () => {
     if (newSkill && !skills.includes(newSkill)) {
@@ -83,11 +156,11 @@ export default function ProfilePage() {
         <CardHeader>
           <div className="flex items-center space-x-4">
             <Avatar className="h-20 w-20 md:h-32 md:w-32">
-              <AvatarImage src="https://robohash.org/txc" alt="Robo Hash" />
+              <AvatarImage src={profilePictureLink} alt="Robo Hash" />
               <AvatarFallback>JD</AvatarFallback>
             </Avatar>
             <div>
-              <CardTitle className="text-2xl">John Doe</CardTitle>
+              <CardTitle className="text-2xl">{name}</CardTitle>
               {isEditingJobTitle ? (
                 <div className="flex items-center gap-2 mt-1">
                   <Input
@@ -233,14 +306,18 @@ export default function ProfilePage() {
               <span>{resumeFile ? resumeFile.name : "No resume uploaded"}</span>
             </div>
             <div className="flex items-center">
-              <Button variant="outline" onClick={triggerFileInputClick}>
+              <Button
+                variant="outline"
+                onClick={triggerFileInputClick}
+                disabled={isLoadingPdf}
+              >
                 <Upload className="mr-2 h-4 w-4" />
-                Upload Resume
+                {isLoadingPdf ? "Processing..." : "Upload Resume"}
               </Button>
               <Input
                 ref={fileInputRef}
                 type="file"
-                accept=".pdf,.doc,.docx"
+                accept=".pdf"
                 onChange={handleResumeUpload}
                 className="hidden"
               />
@@ -251,6 +328,21 @@ export default function ProfilePage() {
               Uploaded on: {uploadTime}
             </p>
           )}
+          {isLoadingPdf && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Reading PDF content...
+            </p>
+          )}
+          {/* {pdfContent && !isLoadingPdf && (
+            <div className="mt-4">
+              <h4 className="font-semibold mb-2">Extracted Content:</h4>
+              <div className="max-h-60 overflow-y-auto border rounded-md p-4">
+                <p className="text-sm text-muted-foreground whitespace-pre-line">
+                  {pdfContent}
+                </p>
+              </div>
+            </div>
+          )} */}
         </CardContent>
       </Card>
 
@@ -287,3 +379,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+
