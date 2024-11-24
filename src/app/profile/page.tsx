@@ -109,7 +109,7 @@ export default function ProfilePage() {
           setPdfContent(text);
           //set the extracted pdf content to the database
           const response = await fetch(
-            `${API_BASE_URL}/users/resume`,
+            `${API_BASE_URL}/resume`,
             {
               method: 'POST',
               headers: {
