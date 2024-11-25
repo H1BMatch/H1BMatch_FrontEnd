@@ -74,17 +74,36 @@ const MatchingJobs: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
-
-  // User profile state (placeholder data)
-  const [userProfile] = useState<UserProfile>({
-    name: "Bikash Acharya",
-    avatar: "https://robohash.org/greenm",
-    bio: "Software Development & Data Science Enthusiast | Computer Science & Data Science Graduate NKU (Dec '24)",
-    skills: ["JavaScript", "React", "Node.js", "TypeScript", "GraphQL"]
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    name: "",
+    avatar: "",
+    bio: "",
+    skills: []
   })
 
+  const getUserProfile = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/profile`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error("Error fetching user data");
+      } 
+      const data = await response.json();
+      setUserProfile({
+        name: data.name,
+        avatar: data.profile_picture_link,
+        bio: data.bio || "Software Development & Data Science Enthusiast | Computer Science & Data Science Graduate NKU (Dec '24)",
+        skills: data.skills || ["JavaScript", "React", "Node.js", "TypeScript", "GraphQL"]
+      });
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
+
   useEffect(() => {
-    fetchMatchingJobs()
+    getUserProfile();
+    fetchMatchingJobs();
   }, [])
 
   const updateFilter = (category, value) => {
@@ -330,3 +349,4 @@ const MatchingJobs: React.FC = () => {
 }
 
 export default MatchingJobs
+
