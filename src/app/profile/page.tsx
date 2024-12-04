@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MapPin, FileText, Upload, Edit2, X, Camera } from 'lucide-react';
 import { useAuth } from "@clerk/clerk-react";
 import * as pdfjs from "pdfjs-dist";
+import { NavBar } from '@/components/NavBar';
 
 const API_BASE_URL = "http://localhost:3001/api";
 
@@ -184,240 +185,247 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="container mx-auto p-4 space-y-6 w-[90%] md:w-[50%]">
-      {/* User Profile Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Avatar className="h-20 w-20 md:h-32 md:w-32">
-                <AvatarImage src={profilePictureLink} alt="Profile Picture" />
-                <AvatarFallback>{name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-              </Avatar>
-              <Button
-                variant="secondary"
-                size="icon"
-                className="absolute bottom-0 right-0"
-                onClick={triggerProfilePictureUpload}
-              >
-                <Camera className="h-4 w-4" />
-                <span className="sr-only">Change profile picture</span>
-              </Button>
-              <Input
-                ref={profilePictureInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleProfilePictureUpload}
-                className="hidden"
-              />
-            </div>
-            <div>
-              <CardTitle className="text-2xl">{name}</CardTitle>
-              {isEditingJobTitle ? (
-                <div className="flex items-center gap-2 mt-1">
-                  <Input
-                    value={jobTitle}
-                    onChange={(e) => setJobTitle(e.target.value)}
-                    className="h-6 py-1 text-sm"
-                  />
-                  <Button size="sm" onClick={() => setIsEditingJobTitle(false)}>
-                    Save
-                  </Button>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                  {jobTitle}
+    <div className="flex">
+      <NavBar />
+      <div className="ml-64 flex-1 p-4">
+        <div className="container mx-auto space-y-6 w-[90%] md:w-[50%]">
+          {/* User Profile Card */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <Avatar className="h-20 w-20 md:h-32 md:w-32">
+                    <AvatarImage src={profilePictureLink} alt="Profile Picture" />
+                    <AvatarFallback>{name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                  </Avatar>
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsEditingJobTitle(true)}
+                    variant="secondary"
+                    size="icon"
+                    className="absolute bottom-0 right-0"
+                    onClick={triggerProfilePictureUpload}
                   >
-                    <Edit2 className="h-3 w-3" />
-                    <span className="sr-only">Edit job title</span>
+                    <Camera className="h-4 w-4" />
+                    <span className="sr-only">Change profile picture</span>
                   </Button>
-                </p>
-              )}
-              <div className="flex items-center mt-1 text-sm text-muted-foreground">
-                <MapPin className="mr-1 h-4 w-4" />
-                {isEditingCity ? (
-                  <div className="flex items-center gap-2">
-                    <Input
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      className="h-6 py-1 text-sm"
-                    />
-                    <Button size="sm" onClick={() => setIsEditingCity(false)}>
-                      Save
-                    </Button>
+                  <Input
+                    ref={profilePictureInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfilePictureUpload}
+                    className="hidden"
+                  />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl">{name}</CardTitle>
+                  {isEditingJobTitle ? (
+                    <div className="flex items-center gap-2 mt-1">
+                      <Input
+                        value={jobTitle}
+                        onChange={(e) => setJobTitle(e.target.value)}
+                        className="h-6 py-1 text-sm"
+                      />
+                      <Button size="sm" onClick={() => setIsEditingJobTitle(false)}>
+                        Save
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                      {jobTitle}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsEditingJobTitle(true)}
+                      >
+                        <Edit2 className="h-3 w-3" />
+                        <span className="sr-only">Edit job title</span>
+                      </Button>
+                    </p>
+                  )}
+                  <div className="flex items-center mt-1 text-sm text-muted-foreground">
+                    <MapPin className="mr-1 h-4 w-4" />
+                    {isEditingCity ? (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                          className="h-6 py-1 text-sm"
+                        />
+                        <Button size="sm" onClick={() => setIsEditingCity(false)}>
+                          Save
+                        </Button>
+                      </div>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        {city}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsEditingCity(true)}
+                        >
+                          <Edit2 className="h-3 w-3" />
+                          <span className="sr-only">Edit city</span>
+                        </Button>
+                      </span>
+                    )}
                   </div>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    {city}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold">Top Skills</h3>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setIsEditingCity(true)}
+                      onClick={() => setIsEditingSkills(!isEditingSkills)}
                     >
-                      <Edit2 className="h-3 w-3" />
-                      <span className="sr-only">Edit city</span>
+                      <Edit2 className="h-4 w-4" />
+                      <span className="sr-only">Edit skills</span>
                     </Button>
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold">Top Skills</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsEditingSkills(!isEditingSkills)}
-                >
-                  <Edit2 className="h-4 w-4" />
-                  <span className="sr-only">Edit skills</span>
-                </Button>
-              </div>
-              {isEditingSkills ? (
-                <div className="space-y-2">
-                  <div className="flex flex-wrap gap-2">
-                    {skills.map((skill, index) => (
-                      <Badge key={index} variant="secondary">
-                        {skill}
-                        <button
-                          onClick={() => handleRemoveSkill(skill)}
-                          className="ml-1 text-xs"
-                        >
-                          <X className="h-3 w-3" />
-                          <span className="sr-only">Remove skill</span>
-                        </button>
-                      </Badge>
-                    ))}
                   </div>
-                  <div className="flex gap-2">
-                    <Input
-                      value={newSkill}
-                      onChange={(e) => setNewSkill(e.target.value)}
-                      placeholder="Add a skill"
-                      className="flex-grow"
-                    />
-                    <Button onClick={handleAddSkill}>Add</Button>
+                  {isEditingSkills ? (
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        {skills.map((skill, index) => (
+                          <Badge key={index} variant="secondary">
+                            {skill}
+                            <button
+                              onClick={() => handleRemoveSkill(skill)}
+                              className="ml-1 text-xs"
+                            >
+                              <X className="h-3 w-3" />
+                              <span className="sr-only">Remove skill</span>
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <Input
+                          value={newSkill}
+                          onChange={(e) => setNewSkill(e.target.value)}
+                          placeholder="Add a skill"
+                          className="flex-grow"
+                        />
+                        <Button onClick={handleAddSkill}>Add</Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {skills.map((skill, index) => (
+                        <Badge key={index} variant="secondary">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold">Bio</h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsEditingBio(!isEditingBio)}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                      <span className="sr-only">Edit bio</span>
+                    </Button>
                   </div>
+                  {isEditingBio ? (
+                    <div className="space-y-2">
+                      <Textarea
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                        rows={4}
+                      />
+                      <Button onClick={() => setIsEditingBio(false)}>
+                        Save
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">{bio}</p>
+                  )}
                 </div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((skill, index) => (
-                    <Badge key={index} variant="secondary">
-                      {skill}
-                    </Badge>
-                  ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Resume Upload Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl">Resume</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap items-center justify-between mb-4">
+                <div className="flex items-center">
+                  <FileText className="mr-2 h-5 w-5" />
+                  <span>{resumeFile ? resumeFile.name : "No resume uploaded"}</span>
                 </div>
+                <div className="flex items-center">
+                  <Button
+                    variant="outline"
+                    onClick={triggerFileInputClick}
+                    disabled={isLoadingPdf}
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    {isLoadingPdf ? "Processing..." : "Upload Resume"}
+                  </Button>
+                  <Input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleResumeUpload}
+                    className="hidden"
+                  />
+                </div>
+              </div>
+              {uploadTime && (
+                <p className="text-sm text-muted-foreground">
+                  Uploaded on: {uploadTime}
+                </p>
               )}
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold">Bio</h3>
+              {isLoadingPdf && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Reading PDF content...
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* About Section */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl">About</CardTitle>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsEditingBio(!isEditingBio)}
+                  onClick={() => setIsEditingAbout(!isEditingAbout)}
                 >
                   <Edit2 className="h-4 w-4" />
-                  <span className="sr-only">Edit bio</span>
+                  <span className="sr-only">Edit about section</span>
                 </Button>
               </div>
-              {isEditingBio ? (
+            </CardHeader>
+            <CardContent>
+              {isEditingAbout ? (
                 <div className="space-y-2">
                   <Textarea
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
+                    value={about}
+                    onChange={(e) => setAbout(e.target.value)}
                     rows={4}
                   />
-                  <Button onClick={() => setIsEditingBio(false)}>Save</Button>
+                  <Button onClick={() => setIsEditingAbout(false)}>Save</Button>
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">{bio}</p>
+                <p className="text-sm text-muted-foreground">{about}</p>
               )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Resume Upload Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">Resume</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap items-center justify-between mb-4">
-            <div className="flex items-center">
-              <FileText className="mr-2 h-5 w-5" />
-              <span>{resumeFile ? resumeFile.name : "No resume uploaded"}</span>
-            </div>
-            <div className="flex items-center">
-              <Button
-                variant="outline"
-                onClick={triggerFileInputClick}
-                disabled={isLoadingPdf}
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                {isLoadingPdf ? "Processing..." : "Upload Resume"}
-              </Button>
-              <Input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf"
-                onChange={handleResumeUpload}
-                className="hidden"
-              />
-            </div>
-          </div>
-          {uploadTime && (
-            <p className="text-sm text-muted-foreground">
-              Uploaded on: {uploadTime}
-            </p>
-          )}
-          {isLoadingPdf && (
-            <p className="text-sm text-muted-foreground mt-2">
-              Reading PDF content...
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* About Section */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl">About</CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsEditingAbout(!isEditingAbout)}
-            >
-              <Edit2 className="h-4 w-4" />
-              <span className="sr-only">Edit about section</span>
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isEditingAbout ? (
-            <div className="space-y-2">
-              <Textarea
-                value={about}
-                onChange={(e) => setAbout(e.target.value)}
-                rows={4}
-/>
-              <Button onClick={() => setIsEditingAbout(false)}>Save</Button>
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">{about}</p>
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
