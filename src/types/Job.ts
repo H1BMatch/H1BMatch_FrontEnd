@@ -36,5 +36,6 @@ export interface Job {
     created_at?: string; // ISO date string
     updated_at?: string; // ISO date string
     distance?: number; // For similarity queries
+    applieddate?: string;
   }
   

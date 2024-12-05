@@ -37,6 +37,7 @@ type UserProfile = {
   avatar: string;
   bio: string;
   skills: string[];
+  title: string;
 }
 
 // User Profile Component
@@ -50,6 +51,7 @@ const UserProfile: React.FC<{ user: UserProfile }> = ({ user }) => (
         </Avatar>
         <div>
           <CardTitle>{user.name}</CardTitle>
+          <h4 className="text-sm text-muted-foreground mb-4 mt-1"> {user.title}</h4>
         </div>
       </div>
     </CardHeader>
@@ -86,11 +88,13 @@ const MatchingJobs: React.FC = () => {
     name: "",
     avatar: "",
     bio: "",
-    skills: []
+    skills: [],
+    title: "",
   })
   const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set())
   const [isApplyDialogOpen, setIsApplyDialogOpen] = useState(false)
   const [jobToApply, setJobToApply] = useState<Job | null>(null)
+  const [applicationDates, setApplicationDates] = useState<{ [key: string]: Date }>({});
 
   const getUserProfile = async () => {
     try {
@@ -108,7 +112,8 @@ const MatchingJobs: React.FC = () => {
             .join(' '),
         avatar: data.profile_picture_link,
         bio: data.bio || "Please Update your bio on the profile page",
-        skills: data.skills || ["JavaScript", "React", "Node.js", "TypeScript", "GraphQL"]
+        skills: data.skills || ["JavaScript", "React", "Node.js", "TypeScript", "GraphQL"],
+        title: data.title || "Software Engineer",
       });
     } catch (error) {
       console.error("Error fetching user profile:", error);
@@ -132,7 +137,7 @@ const MatchingJobs: React.FC = () => {
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
-  const updateFilter = (category, value) => {
+  const updateFilter = (category: keyof typeof filterObject, value: string | boolean) => {
     setFilterObject(prev => {
       if (Array.isArray(prev[category])) {
         if (prev[category].includes(value)) {
@@ -226,27 +231,43 @@ const MatchingJobs: React.FC = () => {
   const handleApplyConfirm = async (applied: boolean) => {
     if (jobToApply) {
       if (applied) {
-        setAppliedJobs(new Set(appliedJobs).add(jobToApply.id))
-        // Here you would typically make an API call to update the backend
-        // For example:
-        // await fetch(`${API_BASE_URL}/jobs/apply`, {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({ jobId: jobToApply.id }),
-        //   credentials: 'include',
-        // })
+        const newAppliedJobs = new Set(appliedJobs).add(jobToApply.id);
+        setAppliedJobs(newAppliedJobs);
+        const currentDate = new Date();
+        setApplicationDates(prev => ({ ...prev, [jobToApply.id]: currentDate }));
+        try {
+          const response =  await fetch(`${API_BASE_URL}/applied-jobs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jobId: jobToApply.id, appliedDate: currentDate }),
+            credentials: 'include',
+          });
+          console.log('response:', response);
+          if (!response.ok) {
+            alert('Error applying to job. Please try again later.');
+            console.error('Error adding this job to applied jobs section:', response.statusText);
+          }
+         else  {
+          console.log('Job applied successfully');  
+
+         }
+        }
+        catch (error) {
+          console.error('Error applying to job:', error);
+        }
       }
-      setIsApplyDialogOpen(false)
-      setJobToApply(null)
+      setIsApplyDialogOpen(false);
+      setJobToApply(null);
     }
-  }
+  };
 
   return (
     <div className="flex">
       <NavBar />
       <div className="ml-64 flex-1 p-4">
-        <h1 className="text-2xl font-bold mb-6 text-center text-info">Find Matching Jobs</h1>
-        <div className="flex gap-6">
+        <h1 className="text-4xl font-bold mb-6 text-center text-blue-500">Find Matching Jobs</h1>
+        <hr />
+        <div className="flex gap-6 mt-1">
           <div className="w-1/4">
             <UserProfile user={userProfile} />
           </div>
@@ -330,9 +351,16 @@ const MatchingJobs: React.FC = () => {
                         {formatSalary(job.min_amount, job.max_amount, job.currency, job.salary_interval)}
                       </p>
                       <p className="text-sm mb-2">{job.description?.slice(0, 100)}...</p>
-                      <p className="text-xs text-muted-foreground">
-                        Posted {formatDistanceToNow(new Date(job.date_posted))} ago
-                      </p>
+                      <div className="flex justify-between items-center">
+                        <p className="text-xs text-muted-foreground">
+                          Posted {formatDistanceToNow(new Date(job.date_posted))} ago
+                        </p>
+                        {appliedJobs.has(job.id) && (
+                          <p className="text-xs text-green-600 font-semibold">
+                            Applied on {applicationDates[job.id]?.toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -362,7 +390,9 @@ const MatchingJobs: React.FC = () => {
                         handleApplyClick(selectedJob);
                       }}
                     >
-                      {appliedJobs.has(selectedJob.id) ? "Applied" : "Apply Job"}
+                      {appliedJobs.has(selectedJob.id) 
+                        ? `Applied on ${applicationDates[selectedJob.id]?.toLocaleDateString()}` 
+                        : "Apply Job"}
                     </Button>
                   </div>
                   <p className="text-sm text-muted-foreground mb-4">

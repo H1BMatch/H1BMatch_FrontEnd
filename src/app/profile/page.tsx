@@ -7,10 +7,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin, FileText, Upload, Edit2, X, Camera } from 'lucide-react';
+import { MapPin, FileText, Upload, Edit2, X, Camera } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import * as pdfjs from "pdfjs-dist";
-import { NavBar } from '@/components/NavBar';
+import { NavBar } from "@/components/NavBar";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 // Initialize PDF.js worker
@@ -47,6 +47,9 @@ export default function ProfilePage() {
   const [name, setName] = useState("FirstName LastName");
   const [profilePictureLink, setProfilePictureLink] = useState("");
   const [isEditingProfilePicture, setIsEditingProfilePicture] = useState(false);
+  const [resumeUploadedDate, setResumeUploadedDate] = useState<string | null>(
+    null
+  );
 
   // references for file inputs
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,10 +64,10 @@ export default function ProfilePage() {
   async function getItems(src: ArrayBuffer) {
     console.log("Reading PDF file");
     const content = await getContent(src);
-    let fullText = '';
+    let fullText = "";
     content.items.forEach((item: any) => {
       if (item.str) {
-        fullText += item.str + ' ';
+        fullText += item.str + " ";
       }
     });
     return fullText.trim();
@@ -76,31 +79,43 @@ export default function ProfilePage() {
 
   const getUserData = async () => {
     const response = await fetch(`${API_BASE_URL}/profile`, {
-      credentials: 'include',
+      credentials: "include",
     });
     if (!response.ok) {
       console.error("Error fetching user data");
       return;
-    } 
+    }
     console.log("Response:", response);
     const data = await response.json();
+    setResumeUploadedDate(data.resume_uploaded_date);
     console.log("User Data:", data);
-    setName(data.name
-      .split(' ')
-            .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join(' ')
+    setName(
+      data.name
+        .split(" ")
+        .map(
+          (word: string) =>
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        )
+        .join(" ")
     );
     setJobTitle(data.title);
     setCity(data.location);
     // setSkills(data.skills);
     setBio(data.bio);
     setAbout(data.about);
-    // setPdfContent(data.resume); 
-    console.log("User Data:", JSON.stringify(data) + "profile picture link is " + data.profile_picture_link);
+    // setPdfContent(data.resume);
+    console.log(
+      "User Data:",
+      JSON.stringify(data) +
+        "profile picture link is " +
+        data.profile_picture_link
+    );
     setProfilePictureLink(data.profile_picture_link);
   };
 
-  const handleResumeUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleResumeUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       if (file.type === "application/pdf") {
@@ -112,23 +127,20 @@ export default function ProfilePage() {
           const text = await getItems(arrayBuffer);
           setPdfContent(text);
           //set the extracted pdf content to the database
-          const response = await fetch(
-            `${API_BASE_URL}/resume`,
-            {
-              method: 'POST',
-              headers: {
-              'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ resume: text }),
-              credentials: 'include',
-            }
-            );
-            console.log("Response:", response);
-            if (response.ok) {
-              alert("Resume uploaded successfully");
-            } else {
-              alert("Error uploading resume. Please try again.");
-            }
+          const response = await fetch(`${API_BASE_URL}/resume`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ resume: text }),
+            credentials: "include",
+          });
+          console.log("Response:", response);
+          if (response.ok) {
+            alert("Resume uploaded successfully");
+          } else {
+            alert("Error uploading resume. Please try again.");
+          }
         } catch (error) {
           console.error("Error reading PDF:", error);
           alert("Error reading PDF file. Please try again.");
@@ -141,17 +153,19 @@ export default function ProfilePage() {
     }
   };
 
-  const handleProfilePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfilePictureUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       const formData = new FormData();
-      formData.append('profilePicture', file);
+      formData.append("profilePicture", file);
 
       try {
         const response = await fetch(`${API_BASE_URL}/upload-profile-picture`, {
-          method: 'POST',
+          method: "POST",
           body: formData,
-          credentials: 'include',
+          credentials: "include",
         });
 
         if (response.ok) {
@@ -184,8 +198,8 @@ export default function ProfilePage() {
         setSkills(updatedSkills);
         setNewSkill("");
       } catch (error) {
-        console.error('Error updating skills:', error);
-        alert('Failed to update skills. Please try again.');
+        console.error("Error updating skills:", error);
+        alert("Failed to update skills. Please try again.");
       }
     }
   };
@@ -193,113 +207,109 @@ export default function ProfilePage() {
   const handleRemoveSkill = async (skillToRemove: string) => {
     const updatedSkills = skills.filter((skill) => skill !== skillToRemove);
     try {
-      await updateUserProfile({ skills: updatedSkills });
+      // await updateUserProfile({ skills: updatedSkills });
       setSkills(updatedSkills);
     } catch (error) {
-      console.error('Error updating skills:', error);
-      alert('Failed to update skills. Please try again.');
+      console.error("Error updating skills:", error);
+      alert("Failed to update skills. Please try again.");
     }
   };
 
   const handleUpdateJobTitle = async (jobTitle: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/update-title`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ jobTitle: jobTitle}),
-        credentials: 'include',
+        body: JSON.stringify({ jobTitle: jobTitle }),
+        credentials: "include",
       });
-      if(response.ok) { 
+      if (response.ok) {
         console.log("Successfully updated job title");
-      }
-      else {
-        alert("Error updating job title. Please try again."); 
+      } else {
+        alert("Error updating job title. Please try again.");
       }
       setIsEditingJobTitle(false);
     } catch (error) {
-      console.error('Error updating job title:', error);
-      alert('Failed to update job title. Please try again.');
+      console.error("Error updating job title:", error);
+      alert("Failed to update job title. Please try again.");
     }
   };
 
   const handleUpdateCity = async (city: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/update-location`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ location: city}),
-        credentials: 'include',
+        body: JSON.stringify({ location: city }),
+        credentials: "include",
       });
-      if(response.ok) { 
+      if (response.ok) {
         console.log("Successfully updated the location");
-      }
-      else {
-        alert("Error updating job title. Please try again."); 
+      } else {
+        alert("Error updating job title. Please try again.");
       }
       setIsEditingCity(false);
     } catch (error) {
-      console.error('Error updating city:', error);
-      alert('Failed to update city. Please try again.');
+      console.error("Error updating city:", error);
+      alert("Failed to update city. Please try again.");
     }
   };
 
   const handleUpdateSkills = async (skills: string[]) => {
     try {
-      await updateUserProfile({ skills });
+      // await updateUserProfile({ skills });
       setIsEditingSkills(false);
     } catch (error) {
-      console.error('Error updating skills:', error);
-      alert('Failed to update skills. Please try again.');
+      console.error("Error updating skills:", error);
+      alert("Failed to update skills. Please try again.");
     }
   };
 
   const handleUpdateBio = async (bio: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/update-bio`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ bio: bio}),
-        credentials: 'include',
+        body: JSON.stringify({ bio: bio }),
+        credentials: "include",
       });
-      if(response.ok) { 
+      if (response.ok) {
         console.log("Successfully updated users bio");
-      }
-      else {
-        alert("Error updating bio. Please try again."); 
+      } else {
+        alert("Error updating bio. Please try again.");
       }
       setIsEditingBio(false);
     } catch (error) {
-      console.error('Error updating bio:', error);
-      alert('Failed to update bio. Please try again.');
+      console.error("Error updating bio:", error);
+      alert("Failed to update bio. Please try again.");
     }
   };
 
   const handleUpdateAbout = async (about: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/update-about`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ about: about}),
-        credentials: 'include',
+        body: JSON.stringify({ about: about }),
+        credentials: "include",
       });
-      if(response.ok) { 
+      if (response.ok) {
         console.log("Successfully updated about section");
-      }
-      else {
-        alert("Error updating About section. Please try again."); 
+      } else {
+        alert("Error updating About section. Please try again.");
       }
       setIsEditingAbout(false);
     } catch (error) {
-      console.error('Error updating about:', error);
-      alert('Failed to update about section. Please try again.');
+      console.error("Error updating about:", error);
+      alert("Failed to update about section. Please try again.");
     }
   };
 
@@ -314,8 +324,16 @@ export default function ProfilePage() {
               <div className="flex items-center space-x-4">
                 <div className="relative">
                   <Avatar className="h-20 w-20 md:h-32 md:w-32">
-                    <AvatarImage src={profilePictureLink} alt="Profile Picture" />
-                    <AvatarFallback>{name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                    <AvatarImage
+                      src={profilePictureLink}
+                      alt="Profile Picture"
+                    />
+                    <AvatarFallback>
+                      {name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </AvatarFallback>
                   </Avatar>
                   <Button
                     variant="secondary"
@@ -343,7 +361,10 @@ export default function ProfilePage() {
                         onChange={(e) => setJobTitle(e.target.value)}
                         className="h-6 py-1 text-sm"
                       />
-                      <Button size="sm" onClick={() => handleUpdateJobTitle(jobTitle)}>
+                      <Button
+                        size="sm"
+                        onClick={() => handleUpdateJobTitle(jobTitle)}
+                      >
                         Save
                       </Button>
                     </div>
@@ -369,7 +390,10 @@ export default function ProfilePage() {
                           onChange={(e) => setCity(e.target.value)}
                           className="h-6 py-1 text-sm"
                         />
-                        <Button size="sm" onClick={() => handleUpdateCity(city)}>
+                        <Button
+                          size="sm"
+                          onClick={() => handleUpdateCity(city)}
+                        >
                           Save
                         </Button>
                       </div>
@@ -427,7 +451,9 @@ export default function ProfilePage() {
                           placeholder="Add a skill"
                           className="flex-grow"
                         />
-                        <Button onClick={() => handleUpdateSkills(skills)}>Add</Button>
+                        <Button onClick={() => handleUpdateSkills(skills)}>
+                          Add
+                        </Button>
                       </div>
                     </div>
                   ) : (
@@ -478,7 +504,13 @@ export default function ProfilePage() {
               <div className="flex flex-wrap items-center justify-between mb-4">
                 <div className="flex items-center">
                   <FileText className="mr-2 h-5 w-5" />
-                  <span>{resumeFile ? resumeFile.name : "No resume uploaded"}</span>
+                    <span className="text-purple-400 font-serif">
+                    {resumeUploadedDate
+                      ? `Resume uploaded on: ${new Date(
+                          resumeUploadedDate
+                        ).toLocaleDateString()}`
+                      : "No resume uploaded"}
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <Button
@@ -546,4 +578,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
