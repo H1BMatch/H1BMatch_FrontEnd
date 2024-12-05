@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,10 +11,7 @@ import { MapPin, FileText, Upload, Edit2, X, Camera } from 'lucide-react';
 import { useAuth } from "@clerk/clerk-react";
 import * as pdfjs from "pdfjs-dist";
 import { NavBar } from '@/components/NavBar';
-
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-console.log("wnv file", process.env)
-
 
 // Initialize PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.mjs`;
@@ -33,15 +31,15 @@ export default function ProfilePage() {
     "AWS",
   ]);
   const [isEditingSkills, setIsEditingSkills] = useState(false);
-  const [newSkill, setNewSkill] = useState("");
+  const [newSkill, setNewSkill] = useState("Add a skill");
   const [about, setAbout] = useState(
-    "I'm a software engineer with 5 years of experience in web development."
+    "Your About Section. Write a brief description about yourself."
   );
   const [isEditingAbout, setIsEditingAbout] = useState(false);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [uploadTime, setUploadTime] = useState<string | null>(null);
-  const [jobTitle, setJobTitle] = useState("Full Stack Developer");
-  const [city, setCity] = useState("San Francisco, CA");
+  const [jobTitle, setJobTitle] = useState("Update your Job Title");
+  const [city, setCity] = useState("Update your location");
   const [isEditingJobTitle, setIsEditingJobTitle] = useState(false);
   const [isEditingCity, setIsEditingCity] = useState(false);
   const [pdfContent, setPdfContent] = useState<string>("");
@@ -87,12 +85,16 @@ export default function ProfilePage() {
     console.log("Response:", response);
     const data = await response.json();
     console.log("User Data:", data);
-    setName(data.name);
-    // setJobTitle(data.jobTitle);
-    // setCity(data.city);
+    setName(data.name
+      .split(' ')
+            .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ')
+    );
+    setJobTitle(data.title);
+    setCity(data.location);
     // setSkills(data.skills);
-    // setBio(data.bio);
-    // setAbout(data.about);
+    setBio(data.bio);
+    setAbout(data.about);
     // setPdfContent(data.resume); 
     console.log("User Data:", JSON.stringify(data) + "profile picture link is " + data.profile_picture_link);
     setProfilePictureLink(data.profile_picture_link);
@@ -174,15 +176,131 @@ export default function ProfilePage() {
     profilePictureInputRef.current?.click();
   };
 
-  const handleAddSkill = () => {
+  const handleAddSkill = async () => {
     if (newSkill && !skills.includes(newSkill)) {
-      setSkills([...skills, newSkill]);
-      setNewSkill("");
+      const updatedSkills = [...skills, newSkill];
+      try {
+        // await updateUserProfile({ skills: updatedSkills });
+        setSkills(updatedSkills);
+        setNewSkill("");
+      } catch (error) {
+        console.error('Error updating skills:', error);
+        alert('Failed to update skills. Please try again.');
+      }
     }
   };
 
-  const handleRemoveSkill = (skillToRemove: string) => {
-    setSkills(skills.filter((skill) => skill !== skillToRemove));
+  const handleRemoveSkill = async (skillToRemove: string) => {
+    const updatedSkills = skills.filter((skill) => skill !== skillToRemove);
+    try {
+      await updateUserProfile({ skills: updatedSkills });
+      setSkills(updatedSkills);
+    } catch (error) {
+      console.error('Error updating skills:', error);
+      alert('Failed to update skills. Please try again.');
+    }
+  };
+
+  const handleUpdateJobTitle = async (jobTitle: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/update-title`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ jobTitle: jobTitle}),
+        credentials: 'include',
+      });
+      if(response.ok) { 
+        console.log("Successfully updated job title");
+      }
+      else {
+        alert("Error updating job title. Please try again."); 
+      }
+      setIsEditingJobTitle(false);
+    } catch (error) {
+      console.error('Error updating job title:', error);
+      alert('Failed to update job title. Please try again.');
+    }
+  };
+
+  const handleUpdateCity = async (city: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/update-location`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ location: city}),
+        credentials: 'include',
+      });
+      if(response.ok) { 
+        console.log("Successfully updated the location");
+      }
+      else {
+        alert("Error updating job title. Please try again."); 
+      }
+      setIsEditingCity(false);
+    } catch (error) {
+      console.error('Error updating city:', error);
+      alert('Failed to update city. Please try again.');
+    }
+  };
+
+  const handleUpdateSkills = async (skills: string[]) => {
+    try {
+      await updateUserProfile({ skills });
+      setIsEditingSkills(false);
+    } catch (error) {
+      console.error('Error updating skills:', error);
+      alert('Failed to update skills. Please try again.');
+    }
+  };
+
+  const handleUpdateBio = async (bio: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/update-bio`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ bio: bio}),
+        credentials: 'include',
+      });
+      if(response.ok) { 
+        console.log("Successfully updated users bio");
+      }
+      else {
+        alert("Error updating bio. Please try again."); 
+      }
+      setIsEditingBio(false);
+    } catch (error) {
+      console.error('Error updating bio:', error);
+      alert('Failed to update bio. Please try again.');
+    }
+  };
+
+  const handleUpdateAbout = async (about: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/update-about`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ about: about}),
+        credentials: 'include',
+      });
+      if(response.ok) { 
+        console.log("Successfully updated about section");
+      }
+      else {
+        alert("Error updating About section. Please try again."); 
+      }
+      setIsEditingAbout(false);
+    } catch (error) {
+      console.error('Error updating about:', error);
+      alert('Failed to update about section. Please try again.');
+    }
   };
 
   return (
@@ -225,7 +343,7 @@ export default function ProfilePage() {
                         onChange={(e) => setJobTitle(e.target.value)}
                         className="h-6 py-1 text-sm"
                       />
-                      <Button size="sm" onClick={() => setIsEditingJobTitle(false)}>
+                      <Button size="sm" onClick={() => handleUpdateJobTitle(jobTitle)}>
                         Save
                       </Button>
                     </div>
@@ -251,7 +369,7 @@ export default function ProfilePage() {
                           onChange={(e) => setCity(e.target.value)}
                           className="h-6 py-1 text-sm"
                         />
-                        <Button size="sm" onClick={() => setIsEditingCity(false)}>
+                        <Button size="sm" onClick={() => handleUpdateCity(city)}>
                           Save
                         </Button>
                       </div>
@@ -309,7 +427,7 @@ export default function ProfilePage() {
                           placeholder="Add a skill"
                           className="flex-grow"
                         />
-                        <Button onClick={handleAddSkill}>Add</Button>
+                        <Button onClick={() => handleUpdateSkills(skills)}>Add</Button>
                       </div>
                     </div>
                   ) : (
@@ -341,9 +459,7 @@ export default function ProfilePage() {
                         onChange={(e) => setBio(e.target.value)}
                         rows={4}
                       />
-                      <Button onClick={() => setIsEditingBio(false)}>
-                        Save
-                      </Button>
+                      <Button onClick={() => handleUpdateBio(bio)}>Save</Button>
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">{bio}</p>
@@ -418,7 +534,7 @@ export default function ProfilePage() {
                     onChange={(e) => setAbout(e.target.value)}
                     rows={4}
                   />
-                  <Button onClick={() => setIsEditingAbout(false)}>Save</Button>
+                  <Button onClick={() => handleUpdateAbout(about)}>Save</Button>
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">{about}</p>

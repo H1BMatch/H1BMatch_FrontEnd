@@ -20,8 +20,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { NavBar } from '@/components/NavBar'
-
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -82,6 +88,9 @@ const MatchingJobs: React.FC = () => {
     bio: "",
     skills: []
   })
+  const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set())
+  const [isApplyDialogOpen, setIsApplyDialogOpen] = useState(false)
+  const [jobToApply, setJobToApply] = useState<Job | null>(null)
 
   const getUserProfile = async () => {
     try {
@@ -93,9 +102,12 @@ const MatchingJobs: React.FC = () => {
       } 
       const data = await response.json();
       setUserProfile({
-        name: data.name,
+        name: data.name
+            .split(' ')
+            .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' '),
         avatar: data.profile_picture_link,
-        bio: data.bio || "Software Development & Data Science Enthusiast | Computer Science & Data Science Graduate NKU (Dec '24)",
+        bio: data.bio || "Please Update your bio on the profile page",
         skills: data.skills || ["JavaScript", "React", "Node.js", "TypeScript", "GraphQL"]
       });
     } catch (error) {
@@ -107,6 +119,18 @@ const MatchingJobs: React.FC = () => {
     getUserProfile();
     fetchMatchingJobs();
   }, [])
+
+  useEffect(() => {
+    const handleFocus = () => {
+      if (localStorage.getItem('showApplyDialog') === 'true') {
+        setIsApplyDialogOpen(true);
+        localStorage.removeItem('showApplyDialog');
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
 
   const updateFilter = (category, value) => {
     setFilterObject(prev => {
@@ -188,6 +212,33 @@ const MatchingJobs: React.FC = () => {
     const formatNumber = (num?: number) => num ? num.toLocaleString() : ''
     const salaryRange = min && max ? `${formatNumber(min)} - ${formatNumber(max)}` : formatNumber(min || max)
     return `${currency || '$'}${salaryRange}${interval ? ` per ${interval}` : ''}`
+  }
+
+  const handleApplyClick = (job: Job) => {
+    // Open the job link in a new tab
+    window.open(job.job_url, '_blank');
+    
+    // Set the job to apply and a flag to show the dialog when the user returns
+    setJobToApply(job);
+    localStorage.setItem('showApplyDialog', 'true');
+  };
+
+  const handleApplyConfirm = async (applied: boolean) => {
+    if (jobToApply) {
+      if (applied) {
+        setAppliedJobs(new Set(appliedJobs).add(jobToApply.id))
+        // Here you would typically make an API call to update the backend
+        // For example:
+        // await fetch(`${API_BASE_URL}/jobs/apply`, {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify({ jobId: jobToApply.id }),
+        //   credentials: 'include',
+        // })
+      }
+      setIsApplyDialogOpen(false)
+      setJobToApply(null)
+    }
   }
 
   return (
@@ -307,11 +358,11 @@ const MatchingJobs: React.FC = () => {
                     <Button
                       className="bg-blue-500 ml-2" 
                       onClick={(e) => {
-                        e.stopPropagation()
-                        window.open(selectedJob.job_url, '_blank')
+                        e.stopPropagation();
+                        handleApplyClick(selectedJob);
                       }}
                     >
-                      Apply Job
+                      {appliedJobs.has(selectedJob.id) ? "Applied" : "Apply Job"}
                     </Button>
                   </div>
                   <p className="text-sm text-muted-foreground mb-4">
@@ -349,6 +400,20 @@ const MatchingJobs: React.FC = () => {
           </div>
         </div>
       </div>
+      <Dialog open={isApplyDialogOpen} onOpenChange={setIsApplyDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Did you apply to this job?</DialogTitle>
+            <DialogDescription>
+              Confirm if you've applied to {jobToApply?.title} at {jobToApply?.company}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => handleApplyConfirm(false)}>No</Button>
+            <Button onClick={() => handleApplyConfirm(true)}>Yes</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Building } from 'lucide-react'
 import { Job } from '@/types/Job'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 // Dummy data for jobs applied with expanded properties
 const initialJobs: Job[] = [
   {
