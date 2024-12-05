@@ -22,7 +22,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { NavBar } from '@/components/NavBar'
 
-const API_BASE_URL = "http://localhost:3001/api"
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 // User profile type
 type UserProfile = {

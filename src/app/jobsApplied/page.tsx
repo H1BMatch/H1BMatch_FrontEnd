@@ -7,11 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Building } from 'lucide-react'
-
+import { Job } from '@/types/Job'
 // Dummy data for jobs applied with expanded properties
-const initialJobs = [
+const initialJobs: Job[] = [
   {
-    id: 1,
+    id: '1',
     title: "Frontend Developer",
     company: "TechCorp",
     appliedDate: new Date(2023, 5, 15),
@@ -26,7 +26,7 @@ const initialJobs = [
     description: "Frontend Developer position focused on building responsive web applications using React and Next.js. Experience with modern JavaScript frameworks required."
   },
   {
-    id: 2,
+    id: '2',
     title: "Full Stack Engineer",
     company: "WebSolutions",
     appliedDate: new Date(2023, 5, 18),
@@ -41,7 +41,7 @@ const initialJobs = [
     description: "Full Stack Engineer position working with React, Node.js, and AWS. Must have experience with cloud infrastructure and microservices architecture."
   },
   {
-    id: 2,
+    id: '2',
     title: "Full Stack Engineer",
     company: "WebSolutions",
     appliedDate: new Date(2023, 5, 18),
@@ -56,7 +56,7 @@ const initialJobs = [
     description: "Full Stack Engineer position working with React, Node.js, and AWS. Must have experience with cloud infrastructure and microservices architecture."
   },
     {
-        id: 2,
+        id: '2',
         title: "Full Stack Engineer",
         company: "WebSolutions",
         appliedDate: new Date(2023, 5, 18),
@@ -71,7 +71,7 @@ const initialJobs = [
         description: "Full Stack Engineer position working with React, Node.js, and AWS. Must have experience with cloud infrastructure and microservices architecture."
     },
     {
-        id: 2,
+        id: '2',
         title: "Full Stack Engineer",
         company: "WebSolutions",
         appliedDate: new Date(2023, 5, 18),
@@ -86,7 +86,7 @@ const initialJobs = [
         description: "Full Stack Engineer position working with React, Node.js, and AWS. Must have experience with cloud infrastructure and microservices architecture."
     },
     {
-        id: 2,
+        id: '2',
         title: "Full Stack Engineer",
         company: "WebSolutions",
         appliedDate: new Date(2023, 5, 18),
@@ -101,7 +101,7 @@ const initialJobs = [
         description: "Full Stack Engineer position working with React, Node.js, and AWS. Must have experience with cloud infrastructure and microservices architecture."
     },
     {
-        id: 2,
+        id: '2',
         title: "Full Stack Engineer",
         company: "WebSolutions",
         appliedDate: new Date(2023, 5, 18),

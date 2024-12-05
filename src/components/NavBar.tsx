@@ -22,7 +22,7 @@ export function NavBar() {
         </Link>
         <Link href="/jobsApplied">
           <Button
-            variant={pathname === "/jobs-applied" ? "default" : "ghost"}
+            variant={pathname === "/jobsApplied" ? "default" : "ghost"}
             className="w-full justify-start"
           >
             <Briefcase className="mr-2 h-4 w-4" />
