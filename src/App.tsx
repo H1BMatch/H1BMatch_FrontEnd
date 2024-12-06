@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { SignIn } from '@clerk/clerk-react';
-import MatchingJobs from './components/MatchingJobs';
+import MatchingJobs from '../src/app/match/page';
 import LandingPage from '@/components/LandingPage';
 import ProtectedRoute from './components/ProtectedRoute';
 

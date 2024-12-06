@@ -70,7 +70,16 @@ const UserProfile: React.FC<{ user: UserProfile }> = ({ user }) => (
 )
 
 const MatchingJobs: React.FC = () => {
-  const [filterObject, setFilterObject] = useState({
+  const [filterObject, setFilterObject] = useState<{
+    jobType: string[];
+    datePosted: string[];
+    experienceLevel: string[];
+    salary: string[];
+    company: string[];
+    remote: string[];
+    employmentType: string[];
+    visaSponsorship: string[];
+  }>({
     jobType: [],
     datePosted: [],
     experienceLevel: [],
@@ -79,7 +88,8 @@ const MatchingJobs: React.FC = () => {
     remote: [],
     employmentType: [],
     visaSponsorship: [],
-  })
+  });
+  
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
@@ -137,7 +147,7 @@ const MatchingJobs: React.FC = () => {
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
-  const updateFilter = (category: keyof typeof filterObject, value: string | boolean) => {
+  const updateFilter = (category: keyof typeof filterObject, value: string) => {
     setFilterObject(prev => {
       if (Array.isArray(prev[category])) {
         if (prev[category].includes(value)) {
@@ -175,7 +185,7 @@ const MatchingJobs: React.FC = () => {
     return acc
   }, 0)
 
-  const filterCategories = [
+  const filterCategories: { name: string; key: keyof typeof filterObject; options: string[] }[] = [
     { name: "Jobs", key: "jobType", options: ["Engineering", "Design", "Product"] },
     { name: "Date posted", key: "datePosted", options: ["Last 24 hours", "Last 7 days", "Last 30 days", "All time"] },
     { name: "Experience level", key: "experienceLevel", options: ["Entry level", "Mid level", "Senior level", "Director"] },
