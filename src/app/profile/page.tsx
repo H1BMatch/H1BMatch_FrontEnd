@@ -85,6 +85,7 @@ export default function ProfilePage() {
       return;
     }
     const data = await response.json();
+    console.log("The data is "+ JSON.stringify(data));
     if(data.resume_uploaded_date) {
       setResumeUploadedDate(data.resume_uploaded_date);
     }
@@ -122,6 +123,7 @@ export default function ProfilePage() {
         try {
           const arrayBuffer = await file.arrayBuffer();
           const text = await getItems(arrayBuffer);
+          console.log("The text is "+ text);
           setPdfContent(text);
           //set the extracted pdf content to the database
           const response = await fetch(`${API_BASE_URL}/resume`, {
