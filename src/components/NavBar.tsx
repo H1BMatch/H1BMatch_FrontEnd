@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Home, Briefcase, User, LogOut } from "lucide-react";
+import { Home, Briefcase, User, LogOut, Contact } from "lucide-react";
 import { useClerk } from "@clerk/nextjs";
 
 export function NavBar() {
@@ -36,6 +36,15 @@ export function NavBar() {
           >
             <User className="mr-2 h-4 w-4" />
             Profile
+          </Button>
+        </Link>
+        <Link href="/about">
+          <Button
+            variant={pathname === "/about" ? "default" : "ghost"}
+            className="w-full justify-start"
+          >
+            <Contact className="mr-2 h-4 w-4" />
+            About Us
           </Button>
         </Link>
         <Button variant="ghost" className="w-full justify-start"  onClick={() => signOut({ redirectUrl: '/' })} >

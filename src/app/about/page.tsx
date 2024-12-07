@@ -6,7 +6,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-
+import { NavBar } from "@/components/NavBar";
 interface DeveloperCardProps {
   name: string
   role: string
@@ -108,33 +108,36 @@ export default function AboutUsPage() {
     {
       name: "Yoseph Shibiru",
       role: "Full Stack Engineer",
-      email: "shibiruy1@mymail.nku.edu",
+      email: "shibiruy1@nku.edu",
       photo: "https://media.licdn.com/dms/image/v2/C4E03AQEDGMN9BApOPQ/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1659142629876?e=1738800000&v=beta&t=H4enUqNbSY6Ut_93lv-MBhCOxDuem6h91luBusY6h2I",
       description: "Prev Data Engineer Intern @Amazon | CS 24'"
     },
     {
       name: "Navleen Singh",
-      role: "Full Stack Developer",
-      email: "singhn3@mymail.nku.edu",
+      role: "Full Stack Engineer",
+      email: "singhn3@nku.edu",
       photo: "https://media.licdn.com/dms/image/v2/C5603AQHQ8nDKPb1QLQ/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1517278386255?e=1738800000&v=beta&t=FzgW4uQTQEBAUjcesz4RJq94SZnoL8dFfMEA6gle1zA",
       description: "Cognitive Computing Platform Engineer at Fidelity Investments"
     },
   ]
 
   return (
-    <div className="container mx-auto py-12">
-      <h1 className="text-4xl font-bold mb-12 text-center">About Us</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16 px-4">
-        {developers.map((dev, index) => (
-          <DeveloperCard key={index} {...dev} />
-        ))}
+    <div className="container mx-auto py-12 flex">
+      <NavBar />
+      <div className='ml-64 flex-1 p-4'>
+        <h1 className="text-4xl font-bold mx-auto mb-12 text-center">About Us</h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16 px-4">
+          {developers.map((dev, index) => (
+            <DeveloperCard key={index} {...dev} />
+          ))}
+        </div>
+        <Card className="max-w-2xl mx-auto">
+          <CardContent className="p-6">
+            <h2 className="text-2xl font-semibold mb-4">Contact Us</h2>
+            <ContactForm />
+          </CardContent>
+        </Card>
       </div>
-      <Card className="max-w-2xl mx-auto">
-        <CardContent className="p-6">
-          <h2 className="text-2xl font-semibold mb-4">Contact Us</h2>
-          <ContactForm />
-        </CardContent>
-      </Card>
     </div>
   )
 }
