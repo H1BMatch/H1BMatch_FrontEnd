@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { NavBar } from '@/components/NavBar'
 import { Job } from '@/types/Job'
 
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function JobsApplied() {
@@ -32,7 +33,6 @@ export default function JobsApplied() {
       }
 
       const data = await response.json();
-      console.log(data);
       setAppliedJobs(data);
     } catch (err) {
       console.error('Error fetching applied jobs:', err);
@@ -49,6 +49,8 @@ export default function JobsApplied() {
     return `${currency || '$'}${salaryRange}${interval ? ` per ${interval}` : ''}`
   }
 
+  
+  
   if (loading) {
     return (
       <div className="flex min-h-screen">
@@ -80,6 +82,7 @@ export default function JobsApplied() {
       <NavBar />
       <div className="ml-64 flex-1 p-8 text-center ">
         <h1 className="text-4xl font-bold mb-6 text-center text-blue-500 ">Applied Jobs</h1>
+        <p className='text-2xl font-bold mb-6 text-center text-green-500'>Total Jobs Applied: {appliedJobs.length} </p>
         <hr />
         {appliedJobs.length === 0 ? (
           <div className="text-center py-8">
@@ -109,6 +112,9 @@ export default function JobsApplied() {
                           <Badge variant={job.is_remote ? "default" : "secondary"}>
                             {job.is_remote ? "Remote" : job.state || "On-site"}
                           </Badge>
+                          {/* <button className='border border-blue-400  p-1 rounded'>
+                            <a href={job.job_url} className='text-black p-1'>See Job</a>
+                          </button> */}
                           <Badge variant={job.is_sponsor ? "default" : "secondary"} className={job.is_sponsor ? "bg-green-500" : ""}>
                             {job.is_sponsor ? "Sponsorship Available" : "No Sponsorship"}
                           </Badge>

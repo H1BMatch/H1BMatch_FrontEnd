@@ -62,7 +62,6 @@ export default function ProfilePage() {
   }
 
   async function getItems(src: ArrayBuffer) {
-    console.log("Reading PDF file");
     const content = await getContent(src);
     let fullText = "";
     content.items.forEach((item: any) => {
@@ -85,10 +84,8 @@ export default function ProfilePage() {
       console.error("Error fetching user data");
       return;
     }
-    console.log("Response:", response);
     const data = await response.json();
     setResumeUploadedDate(data.resume_uploaded_date);
-    console.log("User Data:", data);
     setName(
       data.name
         .split(" ")
@@ -104,12 +101,7 @@ export default function ProfilePage() {
     setBio(data.bio);
     setAbout(data.about);
     // setPdfContent(data.resume);
-    console.log(
-      "User Data:",
-      JSON.stringify(data) +
-        "profile picture link is " +
-        data.profile_picture_link
-    );
+
     setProfilePictureLink(data.profile_picture_link);
   };
 
@@ -135,7 +127,6 @@ export default function ProfilePage() {
             body: JSON.stringify({ resume: text }),
             credentials: "include",
           });
-          console.log("Response:", response);
           if (response.ok) {
             alert("Resume uploaded successfully");
           } else {

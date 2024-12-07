@@ -32,7 +32,7 @@ export default function LandingPage() {
         <h2 className="text-4xl font-bold mb-6">Find Your Perfect Job Match</h2>
         <p className="text-xl mb-8 max-w-2xl mx-auto">
           JobMatcher uses advanced AI to analyze your resume and match you with
-          the best job opportunities. Upload your resume, and we'll connect you
+          the best job opportunities. Upload your resume, and we&aposll connect you
           with companies looking for your unique skills and experience.
         </p>
         <Link href="/signin">

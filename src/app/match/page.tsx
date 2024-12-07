@@ -101,6 +101,8 @@ const MatchingJobs: React.FC = () => {
     skills: [],
     title: "",
   })
+
+
   const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set())
   const [isApplyDialogOpen, setIsApplyDialogOpen] = useState(false)
   const [jobToApply, setJobToApply] = useState<Job | null>(null)
@@ -129,6 +131,29 @@ const MatchingJobs: React.FC = () => {
       console.error("Error fetching user profile:", error);
     }
   };
+
+  const fetchAppliedJobs = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/jobs/applied-jobs`, {
+        credentials: 'include',
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch applied jobs');
+      }
+
+      const data = await response.json();
+      setAppliedJobs(data);
+    } catch (err) {
+      console.error('Error fetching applied jobs:', err);
+      setError('Failed to load applied jobs. Please try again later.');
+    } finally {
+      setLoading(false)
+    }
+  }
+
+
+
 
   useEffect(() => {
     getUserProfile();
@@ -186,10 +211,10 @@ const MatchingJobs: React.FC = () => {
   }, 0)
 
   const filterCategories: { name: string; key: keyof typeof filterObject; options: string[] }[] = [
-    { name: "Jobs", key: "jobType", options: ["Engineering", "Design", "Product"] },
-    { name: "Date posted", key: "datePosted", options: ["Last 24 hours", "Last 7 days", "Last 30 days", "All time"] },
+    { name: "Jobs", key: "jobType", options: ["Software Engineer", "Data Scientist", "Web Developer","Data Engineer", "Front End", "Backend"] },
+    { name: "Date posted in days", key: "datePosted", options: ["1", "2", "7", "30", "All Day"] },
     { name: "Experience level", key: "experienceLevel", options: ["Entry level", "Mid level", "Senior level", "Director"] },
-    { name: "Salary", key: "salary", options: ["$0 - $50k", "$50k - $100k", "$100k - $150k", "$150k+"] },
+    { name: "Min Salary", key: "salary", options: ["10000", "40000", "60000", "80000", "100000","100000+"] },
     { name: "Company", key: "company", options: ["Startup", "Mid-size", "Enterprise"] },
     { name: "Remote", key: "remote", options: ["Remote only", "Hybrid", "On-site"] },
     { name: "Employment type", key: "employmentType", options: ["Full-time", "Part-time", "Contract", "Internship"] },
@@ -197,20 +222,48 @@ const MatchingJobs: React.FC = () => {
   ]
 
   const fetchMatchingJobs = async () => {
+    console.log("Inside the fetching jobs function");
     setLoading(true)
     setError('')
     setJobs([])
     setSelectedJob(null)
     try {
-      const queryParams = new URLSearchParams({
-        filters: JSON.stringify(filterObject),
-      })
+      const queryParams = new URLSearchParams();
+      // Dynamically add filters to the query parameters
+      if (filterObject.jobType && filterObject.jobType.length > 0) {
+        queryParams.append('job_type', filterObject.jobType.join(',')); // Assuming it's an array
+      }
+      if (filterObject.datePosted && filterObject.datePosted.length > 0) {
+        queryParams.append('date_posted', filterObject.datePosted.join(','));
+      }
+      if (filterObject.experienceLevel && filterObject.experienceLevel.length > 0) {
+        queryParams.append('job_level', filterObject.experienceLevel.join(','));
+      }
+      if (filterObject.salary && filterObject.salary.length > 0) {
+        queryParams.append('min_salary', filterObject.salary[0]);
+        queryParams.append('max_salary', filterObject.salary[1]);
+      }
+      if (filterObject.company && filterObject.company.length > 0) {
+        queryParams.append('company', filterObject.company.join(','));
+      }
+      if (filterObject.remote && filterObject.remote.length > 0) {
+        queryParams.append('is_remote', filterObject.remote.includes('Remote only').toString());
+      }
+      if (filterObject.employmentType && filterObject.employmentType.length > 0) {
+        queryParams.append('job_type', filterObject.employmentType.join(',')); // Adjust if already included in jobType
+      }
+      if (filterObject.visaSponsorship && filterObject.visaSponsorship.length > 0) {
+        queryParams.append('is_sponsor', filterObject.visaSponsorship.includes('Available').toString());
+      }
+
+      console.log('queryParams:', queryParams.toString());
       const response = await fetch(
-        `${API_BASE_URL}/jobs/match?${queryParams}`,
+        `${API_BASE_URL}/jobs/match?${queryParams.toString()}`,
         {
           credentials: 'include',
         }
       )
+      console.log('filterObject:', JSON.stringify(filterObject)); 
       const jobsData: Job[] = await response.json()
       setJobs(jobsData)
       setSelectedJob(jobsData.length > 0 ? jobsData[0] : null)
@@ -252,7 +305,6 @@ const MatchingJobs: React.FC = () => {
             body: JSON.stringify({ jobId: jobToApply.id, appliedDate: currentDate }),
             credentials: 'include',
           });
-          console.log('response:', response);
           if (!response.ok) {
             alert('Error applying to job. Please try again later.');
             console.error('Error adding this job to applied jobs section:', response.statusText);
@@ -270,6 +322,19 @@ const MatchingJobs: React.FC = () => {
       setJobToApply(null);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen">
+        <NavBar />
+        <div className="ml-64 flex-1 p-8">
+          <div className="flex items-center justify-center h-full">
+            <p className="text-lg text-muted-foreground">Loading Mached jobs...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex">

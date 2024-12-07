@@ -11,7 +11,7 @@ export function NavBar() {
   return (
     <nav className="bg-background border-r h-screen w-64 fixed left-0 top-0 p-4">
       <div className="flex flex-col space-y-4">
-        <Link href="/">
+        <Link href="/match">
           <Button
             variant={pathname === "/match" ? "default" : "ghost"}
             className="w-full justify-start"
