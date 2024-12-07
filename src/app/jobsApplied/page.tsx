@@ -13,7 +13,7 @@ import { Job } from '@/types/Job'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-export default function JobsApplied() {
+const JobsApplied: React.FC = () => {
   const [appliedJobs, setAppliedJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -147,3 +147,4 @@ export default function JobsApplied() {
   )
 }
 
+export default JobsApplied;

@@ -4,7 +4,6 @@ import { useAuth } from '@clerk/clerk-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-
 export default function LandingPage() {
 
   const { isSignedIn } = useAuth();
@@ -34,6 +33,10 @@ export default function LandingPage() {
           JobMatcher uses advanced AI to analyze your resume and match you with
           the best job opportunities. Upload your resume, and we&aposll connect you
           with companies looking for your unique skills and experience.
+          To learn more about us and if you have any questions, fell free to reach out to us by clicking<br /> 
+          <Link href="/about" className='text-blue-500'>
+             here
+          </Link>.
         </p>
         <Link href="/signin">
           <Button size="lg" className="text-lg px-8 py-4">

@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from 'react'
-import { Card, CardContent } from "@/components/ui/card"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { NavBar } from "@/components/NavBar";
+import { useState } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import Link from 'next/link';
+
 interface DeveloperCardProps {
   name: string
   role: string
@@ -123,7 +124,6 @@ export default function AboutUsPage() {
 
   return (
     <div className="container mx-auto py-12 flex">
-      <NavBar />
       <div className='ml-64 flex-1 p-4'>
         <h1 className="text-4xl font-bold mx-auto mb-12 text-center">About Us</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16 px-4">

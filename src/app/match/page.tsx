@@ -28,6 +28,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { NavBar } from '@/components/NavBar'
+import { get } from 'http'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -108,6 +109,19 @@ const MatchingJobs: React.FC = () => {
   const [jobToApply, setJobToApply] = useState<Job | null>(null)
   const [applicationDates, setApplicationDates] = useState<{ [key: string]: Date }>({});
 
+  const getUserRoute = async () => { 
+    try{
+      const response = await fetch(`${API_BASE_URL}/user`, {
+        credentials: 'include',
+       });
+
+    }
+    catch(error) {
+      console.log("Error fetching user route:", error);
+    }
+
+
+   }
   const getUserProfile = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/profile`, {
@@ -156,10 +170,11 @@ const MatchingJobs: React.FC = () => {
 
 
   useEffect(() => {
+    getUserRoute();
     getUserProfile();
     fetchMatchingJobs();
+  
   }, [])
-
   useEffect(() => {
     const handleFocus = () => {
       if (localStorage.getItem('showApplyDialog') === 'true') {
@@ -329,7 +344,7 @@ const MatchingJobs: React.FC = () => {
         <NavBar />
         <div className="ml-64 flex-1 p-8">
           <div className="flex items-center justify-center h-full">
-            <p className="text-lg text-muted-foreground">Loading Mached jobs...</p>
+            <p className="text-lg text-muted-foreground">Loading Matched jobs...</p>
           </div>
         </div>
       </div>
@@ -523,5 +538,5 @@ const MatchingJobs: React.FC = () => {
   )
 }
 
-export default MatchingJobs
+export default MatchingJobs;
 

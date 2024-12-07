@@ -85,7 +85,12 @@ export default function ProfilePage() {
       return;
     }
     const data = await response.json();
-    setResumeUploadedDate(data.resume_uploaded_date);
+    if(data.resume_uploaded_date) {
+      setResumeUploadedDate(data.resume_uploaded_date);
+    }
+    else {
+      setResumeUploadedDate("");
+    }
     setName(
       data.name
         .split(" ")
@@ -305,7 +310,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="flex">
+    <div className="flex ">
       <NavBar />
       <div className="ml-64 flex-1 p-4">
         <div className="container mx-auto space-y-6 w-[90%] md:w-[50%]">
@@ -349,6 +354,7 @@ export default function ProfilePage() {
                     <div className="flex items-center gap-2 mt-1">
                       <Input
                         value={jobTitle}
+                        placeholder="Update your job title"
                         onChange={(e) => setJobTitle(e.target.value)}
                         className="h-6 py-1 text-sm"
                       />
@@ -380,6 +386,7 @@ export default function ProfilePage() {
                           value={city}
                           onChange={(e) => setCity(e.target.value)}
                           className="h-6 py-1 text-sm"
+                          placeholder="Update your location"
                         />
                         <Button
                           size="sm"
