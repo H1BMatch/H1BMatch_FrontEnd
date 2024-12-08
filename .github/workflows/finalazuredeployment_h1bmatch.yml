@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Node.js app to Azure Web App - h1bmatch
+name: Build and deploy Node.js app to Azure Web App - H1BMatch
 
 on:
   push:
@@ -24,10 +24,11 @@ jobs:
       - name: npm install, build, and test
         run: |
           npm install
-  
+          npm run build --if-present
+          npm run test --if-present
 
       - name: Zip artifact for deployment
-        run:  zip next.zip ./* .next -qr
+        run: zip release.zip ./* -r
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -56,15 +57,15 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_98EADF5DD6B845C6A66AF4B2D225D795 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_9A74EC0C52DE4ED292329F8679B44244 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_4D3EE0046D46476CBE045D79730FFB29 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_B551F47658A9452FA766A59F1A7DD5EE }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_F6D4F31E72DB4577903BDCEF46EFC5D8 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_F3D4AEC592544FA9B21C194A9990058D }}
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'h1bmatch'
+          app-name: 'H1BMatch'
           slot-name: 'Production'
           package: .
           
