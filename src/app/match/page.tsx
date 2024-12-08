@@ -114,13 +114,10 @@ const MatchingJobs: React.FC = () => {
       const response = await fetch(`${API_BASE_URL}/user`, {
         credentials: 'include',
        });
-
     }
     catch(error) {
       console.log("Error fetching user route:", error);
     }
-
-
    }
   const getUserProfile = async () => {
     try {
