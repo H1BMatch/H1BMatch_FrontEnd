@@ -76,7 +76,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="bg-blue-600 text-white py-8">
+      <footer className="bg-blue-600 text-white py-9 mt-10">
         <div className="container mx-auto px-4 text-center">
           <p>&copy; 2023 JobMatcher. All rights reserved.</p>
         </div>
