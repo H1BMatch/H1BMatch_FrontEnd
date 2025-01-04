@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Job } from '@/types/Job'
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -28,7 +28,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { NavBar } from '@/components/NavBar'
-import { get } from 'http'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -52,7 +51,7 @@ const UserProfile: React.FC<{ user: UserProfile }> = ({ user }) => (
         </Avatar>
         <div>
           <CardTitle>{user.name}</CardTitle>
-          <h4 className="text-sm text-muted-foreground mb-4 mt-1"> {user.title}</h4>
+          <h4 className="text-sm text-muted-foreground mb-4 mt-1">{user.title}</h4>
         </div>
       </div>
     </CardHeader>
@@ -72,23 +71,12 @@ const UserProfile: React.FC<{ user: UserProfile }> = ({ user }) => (
 
 const MatchingJobs: React.FC = () => {
   const [filterObject, setFilterObject] = useState<{
-    jobType: string[];
-    datePosted: string[];
-    experienceLevel: string[];
-    salary: string[];
-    company: string[];
-    remote: string[];
-    employmentType: string[];
-    visaSponsorship: string[];
+    title: string;
+    is_remote?: boolean;
+    job_type: string;
   }>({
-    jobType: [],
-    datePosted: [],
-    experienceLevel: [],
-    salary: [],
-    company: [],
-    remote: [],
-    employmentType: [],
-    visaSponsorship: [],
+    title: '',
+    job_type: '',
   });
   
   const [jobs, setJobs] = useState<Job[]>([])
@@ -103,22 +91,21 @@ const MatchingJobs: React.FC = () => {
     title: "",
   })
 
-
   const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set())
   const [isApplyDialogOpen, setIsApplyDialogOpen] = useState(false)
   const [jobToApply, setJobToApply] = useState<Job | null>(null)
   const [applicationDates, setApplicationDates] = useState<{ [key: string]: Date }>({});
 
   const getUserRoute = async () => { 
-    try{
+    try {
       const response = await fetch(`${API_BASE_URL}/user`, {
         credentials: 'include',
-       });
-    }
-    catch(error) {
+      });
+    } catch(error) {
       console.log("Error fetching user route:", error);
     }
-   }
+  }
+
   const getUserProfile = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/profile`, {
@@ -130,9 +117,9 @@ const MatchingJobs: React.FC = () => {
       const data = await response.json();
       setUserProfile({
         name: data.name
-            .split(' ')
-            .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join(' '),
+          .split(' ')
+          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' '),
         avatar: data.profile_picture_link,
         bio: data.bio || "Please Update your bio on the profile page",
         skills: data.skills || ["JavaScript", "React", "Node.js", "TypeScript", "GraphQL"],
@@ -154,7 +141,7 @@ const MatchingJobs: React.FC = () => {
       }
 
       const data = await response.json();
-      setAppliedJobs(data);
+      setAppliedJobs(new Set(data));
     } catch (err) {
       console.error('Error fetching applied jobs:', err);
       setError('Failed to load applied jobs. Please try again later.');
@@ -163,15 +150,13 @@ const MatchingJobs: React.FC = () => {
     }
   }
 
-
-
-
   useEffect(() => {
     getUserRoute();
     getUserProfile();
+    fetchAppliedJobs();
     fetchMatchingJobs();
-  
   }, [])
+
   useEffect(() => {
     const handleFocus = () => {
       if (localStorage.getItem('showApplyDialog') === 'true') {
@@ -184,54 +169,36 @@ const MatchingJobs: React.FC = () => {
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
-  const updateFilter = (category: keyof typeof filterObject, value: string) => {
+  const updateFilter = (category: keyof typeof filterObject, value: string | boolean) => {
     setFilterObject(prev => {
       if (Array.isArray(prev[category])) {
-        if (prev[category].includes(value)) {
-          return { ...prev, [category]: prev[category].filter(item => item !== value) }
+        const array = prev[category] as string[];
+        if (array.includes(value as string)) {
+          return { ...prev, [category]: array.filter(item => item !== value) };
         } else {
-          return { ...prev, [category]: [...prev[category], value] }
+          return { ...prev, [category]: [...array, value as string] };
         }
       } else if (typeof prev[category] === 'boolean') {
-        return { ...prev, [category]: !prev[category] }
+        return { ...prev, [category]: value as boolean };
       } else {
-        return { ...prev, [category]: value }
+        return { ...prev, [category]: value as string };
       }
-    })
-  }
+    });
+  };
 
   const resetFilters = () => {
     setFilterObject({
-      jobType: [],
-      datePosted: [],
-      experienceLevel: [],
-      salary: [],
-      company: [],
-      remote: [],
-      employmentType: [],
-      visaSponsorship: [],
-    })
-  }
+      title: '',
+      is_remote: undefined,
+      job_type: '',
+    });
+  };
 
-  const totalFilters = Object.entries(filterObject).reduce((acc, [key, value]) => {
-    if (Array.isArray(value)) {
-      return acc + value.length
-    } else if (typeof value === 'boolean') {
-      return acc + (value ? 1 : 0)
-    }
-    return acc
-  }, 0)
-
-  const filterCategories: { name: string; key: keyof typeof filterObject; options: string[] }[] = [
-    { name: "Jobs", key: "jobType", options: ["Software Engineer", "Data Scientist", "Web Developer","Data Engineer", "Front End", "Backend"] },
-    { name: "Date posted in days", key: "datePosted", options: ["1", "2", "7", "30", "All Day"] },
-    { name: "Experience level", key: "experienceLevel", options: ["Entry level", "Mid level", "Senior level", "Director"] },
-    { name: "Min Salary", key: "salary", options: ["10000", "40000", "60000", "80000", "100000","100000+"] },
-    { name: "Company", key: "company", options: ["Startup", "Mid-size", "Enterprise"] },
-    { name: "Remote", key: "remote", options: ["Remote only", "Hybrid", "On-site"] },
-    { name: "Employment type", key: "employmentType", options: ["Full-time", "Part-time", "Contract", "Internship"] },
-    { name: "Visa Sponsorship", key: "visaSponsorship", options: ["Available", "Not Available"] },
-  ]
+  const filterCategories = [
+    { name: "Job Title", key: "title" as const },
+    { name: "Remote", key: "is_remote" as const },
+    { name: "Job Type", key: "job_type" as const, options: ["temporary", "fulltime", "contract", "internship", "parttime"] },
+  ];
 
   const fetchMatchingJobs = async () => {
     console.log("Inside the fetching jobs function");
@@ -241,42 +208,27 @@ const MatchingJobs: React.FC = () => {
     setSelectedJob(null)
     try {
       const queryParams = new URLSearchParams();
-      // Dynamically add filters to the query parameters
-      if (filterObject.jobType && filterObject.jobType.length > 0) {
-        queryParams.append('job_type', filterObject.jobType.join(',')); // Assuming it's an array
+    
+      if (filterObject.title) {
+        queryParams.append('title', filterObject.title);
       }
-      if (filterObject.datePosted && filterObject.datePosted.length > 0) {
-        queryParams.append('date_posted', filterObject.datePosted.join(','));
+      if (filterObject.is_remote !== undefined) {
+        queryParams.append('is_remote', filterObject.is_remote.toString());
       }
-      if (filterObject.experienceLevel && filterObject.experienceLevel.length > 0) {
-        queryParams.append('job_level', filterObject.experienceLevel.join(','));
-      }
-      if (filterObject.salary && filterObject.salary.length > 0) {
-        queryParams.append('min_salary', filterObject.salary[0]);
-        queryParams.append('max_salary', filterObject.salary[1]);
-      }
-      if (filterObject.company && filterObject.company.length > 0) {
-        queryParams.append('company', filterObject.company.join(','));
-      }
-      if (filterObject.remote && filterObject.remote.length > 0) {
-        queryParams.append('is_remote', filterObject.remote.includes('Remote only').toString());
-      }
-      if (filterObject.employmentType && filterObject.employmentType.length > 0) {
-        queryParams.append('job_type', filterObject.employmentType.join(',')); // Adjust if already included in jobType
-      }
-      if (filterObject.visaSponsorship && filterObject.visaSponsorship.length > 0) {
-        queryParams.append('is_sponsor', filterObject.visaSponsorship.includes('Available').toString());
+      if (filterObject.job_type) {
+        queryParams.append('job_type', filterObject.job_type);
       }
 
       console.log('queryParams:', queryParams.toString());
       const response = await fetch(
-        `${API_BASE_URL}/jobs/match?${queryParams.toString()}`,
+        `${API_BASE_URL}/jobs/match${queryParams.toString() ? `?${queryParams.toString()}` : ''}`,
         {
           credentials: 'include',
         }
       )
-      console.log('filterObject:', JSON.stringify(filterObject)); 
+
       const jobsData: Job[] = await response.json()
+      console.log('jobsData:', jobsData)
       setJobs(jobsData)
       setSelectedJob(jobsData.length > 0 ? jobsData[0] : null)
     } catch (error: any) {
@@ -295,10 +247,7 @@ const MatchingJobs: React.FC = () => {
   }
 
   const handleApplyClick = (job: Job) => {
-    // Open the job link in a new tab
     window.open(job.job_url, '_blank');
-    
-    // Set the job to apply and a flag to show the dialog when the user returns
     setJobToApply(job);
     localStorage.setItem('showApplyDialog', 'true');
   };
@@ -311,7 +260,7 @@ const MatchingJobs: React.FC = () => {
         const currentDate = new Date();
         setApplicationDates(prev => ({ ...prev, [jobToApply.id]: currentDate }));
         try {
-          const response =  await fetch(`${API_BASE_URL}/applied-jobs`, {
+          const response = await fetch(`${API_BASE_URL}/applied-jobs`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ jobId: jobToApply.id, appliedDate: currentDate }),
@@ -320,13 +269,10 @@ const MatchingJobs: React.FC = () => {
           if (!response.ok) {
             alert('Error applying to job. Please try again later.');
             console.error('Error adding this job to applied jobs section:', response.statusText);
+          } else {
+            console.log('Job applied successfully');  
           }
-         else  {
-          console.log('Job applied successfully');  
-
-         }
-        }
-        catch (error) {
+        } catch (error) {
           console.error('Error applying to job:', error);
         }
       }
@@ -359,43 +305,55 @@ const MatchingJobs: React.FC = () => {
             <UserProfile user={userProfile} />
           </div>
           <div className="w-3/4">
-            <nav className="flex flex-wrap items-center gap-2 p-4 border-b mb-6">
-              {filterCategories.map((category) => (
-                <DropdownMenu key={category.key}>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant={filterObject[category.key].length > 0 ? "default" : "outline"} className="gap-2">
-                      {category.name}
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56">
-                    <DropdownMenuLabel>Filter by {category.name.toLowerCase()}</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                      {category.options.map((option) => (
-                        <DropdownMenuCheckboxItem
-                          key={option}
-                          checked={filterObject[category.key].includes(option)}
-                          onCheckedChange={() => updateFilter(category.key, option)}
-                        >
-                          {option}
-                        </DropdownMenuCheckboxItem>
-                      ))}
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ))}
-              <Button variant="outline" className="gap-2">
-                All filters
-                <Badge variant="secondary" className="ml-1">{totalFilters}</Badge>
-              </Button>
-              <Button variant="ghost" className="gap-2" onClick={resetFilters}>
-                Reset
-                <X className="h-4 w-4" />
-              </Button>
-              <Button variant="default" className="gap-2" onClick={fetchMatchingJobs}>
-                Search
-              </Button>
+            <nav className="flex flex-wrap items-center gap-4 p-4 border-b mb-6">
+              <div className="flex items-center gap-2">
+                <label htmlFor="jobTitle" className="font-medium">Job Title:</label>
+                <Input
+                  id="jobTitle"
+                  type="text"
+                  placeholder="Enter job title"
+                  value={filterObject.title}
+                  onChange={(e) => setFilterObject(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-64"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label htmlFor="isRemote" className="font-medium">Remote:</label>
+                <input
+                  id="isRemote"
+                  type="checkbox"
+                  checked={filterObject.is_remote || false}
+                  onChange={(e) => setFilterObject(prev => ({ ...prev, is_remote: e.target.checked }))}
+                  className="form-checkbox h-5 w-5 text-blue-600"
+                />
+              </div>
+
+              <div className="flex items-center gap-4">
+                <span className="font-medium">Job Type:</span>
+                {filterCategories.find(cat => cat.key === "job_type")?.options?.map((option) => (
+                  <label key={option} className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      name="jobType"
+                      value={option}
+                      checked={filterObject.job_type === option}
+                      onChange={() => setFilterObject(prev => ({ ...prev, job_type: option }))}
+                      className="form-radio h-5 w-5 text-blue-600"
+                    />
+                    <span className="ml-2">{option}</span>
+                  </label>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button variant="default" className="gap-2 bg-blue-500" onClick={fetchMatchingJobs}>
+                  Search
+                </Button>
+                <Button variant="outline" className="gap-2" onClick={resetFilters}>
+                  Reset
+                </Button>
+              </div>
             </nav>
             {error && (
               <Alert variant="destructive" className="mb-6">
@@ -421,14 +379,11 @@ const MatchingJobs: React.FC = () => {
                         </Avatar>
                         <CardTitle className="flex flex-col flex-1">
                           <span className="w-full mb-2">{job.title}</span>
-                          <div className="flex justify-between items-center">
-                            <Badge variant={job.is_remote ? "default" : "secondary"}>
+                            <div className="flex justify-between items-center">
+                            <Badge variant={job.is_remote ? "default" : "secondary"} className={job.is_remote ? "bg-green-500" : ""}>
                               {job.is_remote ? "Remote" : job.state || "On-site"}
                             </Badge>
-                            <Badge variant={job.is_sponsor ? "default" : "secondary"} className={job.is_sponsor ? "bg-green-500" : ""}>
-                              {job.is_sponsor ? "Sponsorship Available" : "No Sponsorship"}
-                            </Badge>
-                          </div>
+                            </div>
                         </CardTitle>
                       </div>
                     </CardHeader>

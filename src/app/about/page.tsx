@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Link from 'next/link';
+import { NavBar } from "@/components/NavBar";
+import { Nav } from 'react-bootstrap';
+
 
 interface DeveloperCardProps {
   name: string
@@ -75,25 +78,28 @@ function ContactForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <Input type="text" name="name" placeholder="Your Name" required className="w-full" />
-      </div>
-      <div>
-        <Input type="email" name="email" placeholder="Your Email" required className="w-full" />
-      </div>
-      <div>
-        <Textarea name="message" placeholder="Your Message" required className="w-full min-h-[150px]" />
-      </div>
-      <Button type="submit" disabled={isSubmitting} className="w-full">
-        {isSubmitting ? 'Sending...' : 'Send Message'}
-      </Button>
-      {submitStatus && (
-        <div className={`mt-4 p-4 ${submitStatus.includes("Oops") ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"} rounded-md`} role="alert">
-          {submitStatus}
+    <div>
+      <NavBar />
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <Input type="text" name="name" placeholder="Your Name" required className="w-full" />
         </div>
-      )}
-    </form>
+        <div>
+          <Input type="email" name="email" placeholder="Your Email" required className="w-full" />
+        </div>
+        <div>
+          <Textarea name="message" placeholder="Your Message" required className="w-full min-h-[150px]" />
+        </div>
+        <Button type="submit" disabled={isSubmitting} className="w-full">
+          {isSubmitting ? 'Sending...' : 'Send Message'}
+        </Button>
+        {submitStatus && (
+          <div className={`mt-4 p-4 ${submitStatus.includes("Oops") ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"} rounded-md`} role="alert">
+            {submitStatus}
+          </div>
+        )}
+      </form>
+    </div> 
   )
 }
 
