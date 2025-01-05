@@ -11,6 +11,9 @@ import { Input } from "@/components/ui/input"
 import { formatDistanceToNow } from 'date-fns'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Building, ChevronDown, X } from 'lucide-react'
+import { useAuth } from '@clerk/nextjs'
+
+
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -70,6 +73,7 @@ const UserProfile: React.FC<{ user: UserProfile }> = ({ user }) => (
 )
 
 const MatchingJobs: React.FC = () => {
+  const { getToken } = useAuth()
   const [filterObject, setFilterObject] = useState<{
     title: string;
     is_remote?: boolean;
@@ -98,8 +102,13 @@ const MatchingJobs: React.FC = () => {
 
   const getUserRoute = async () => { 
     try {
+      console.log("The token is:", await getToken());
       const response = await fetch(`${API_BASE_URL}/user`, {
         credentials: 'include',
+        headers: { 
+          "Content-Type": "application/json",
+          'Authorization' :`Bearer ${await getToken()}`
+        }
       });
     } catch(error) {
       console.log("Error fetching user route:", error);
@@ -110,6 +119,10 @@ const MatchingJobs: React.FC = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/profile`, {
         credentials: 'include',
+        headers: { 
+          "Content-Type": "application/json",
+          'Authorization' :`Bearer ${await getToken()}`
+        }
       });
       if (!response.ok) {
         throw new Error("Error fetching user data");
@@ -134,6 +147,10 @@ const MatchingJobs: React.FC = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/jobs/applied-jobs`, {
         credentials: 'include',
+        headers: { 
+          "Content-Type": "application/json",
+          'Authorization' :`Bearer ${await getToken()}`
+        }
       })
       
       if (!response.ok) {
@@ -201,7 +218,6 @@ const MatchingJobs: React.FC = () => {
   ];
 
   const fetchMatchingJobs = async () => {
-    console.log("Inside the fetching jobs function");
     setLoading(true)
     setError('')
     setJobs([])
@@ -219,16 +235,18 @@ const MatchingJobs: React.FC = () => {
         queryParams.append('job_type', filterObject.job_type);
       }
 
-      console.log('queryParams:', queryParams.toString());
       const response = await fetch(
         `${API_BASE_URL}/jobs/match${queryParams.toString() ? `?${queryParams.toString()}` : ''}`,
         {
           credentials: 'include',
+          headers: { 
+            "Content-Type": "application/json",
+            'Authorization' :`Bearer ${await getToken()}`
+          }
         }
       )
 
       const jobsData: Job[] = await response.json()
-      console.log('jobsData:', jobsData)
       setJobs(jobsData)
       setSelectedJob(jobsData.length > 0 ? jobsData[0] : null)
     } catch (error: any) {
@@ -262,7 +280,10 @@ const MatchingJobs: React.FC = () => {
         try {
           const response = await fetch(`${API_BASE_URL}/applied-jobs`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              "Content-Type": "application/json",
+              'Authorization' :`Bearer ${await getToken()}`
+            },
             body: JSON.stringify({ jobId: jobToApply.id, appliedDate: currentDate }),
             credentials: 'include',
           });

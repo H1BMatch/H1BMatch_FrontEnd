@@ -9,11 +9,13 @@ import { Building } from 'lucide-react'
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { NavBar } from '@/components/NavBar'
 import { Job } from '@/types/Job'
+import { useAuth } from '@clerk/nextjs'
 
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const JobsApplied: React.FC = () => {
+  const { getToken } = useAuth();
   const [appliedJobs, setAppliedJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -26,6 +28,10 @@ const JobsApplied: React.FC = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/jobs/applied-jobs`, {
         credentials: 'include',
+        headers: { 
+          "Content-Type": "application/json",
+          'Authorization' :`Bearer ${await getToken()}`
+        }
       })
       
       if (!response.ok) {

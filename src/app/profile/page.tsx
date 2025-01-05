@@ -8,15 +8,18 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MapPin, FileText, Upload, Edit2, X, Camera } from "lucide-react";
-import { useAuth } from "@clerk/clerk-react";
 import * as pdfjs from "pdfjs-dist";
 import { NavBar } from "@/components/NavBar";
+
+import { useAuth } from '@clerk/nextjs'
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 // Initialize PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.mjs`;
 
 export default function ProfilePage() {
+  const { getToken } = useAuth()
   const { isSignedIn } = useAuth();
 
   const [bio, setBio] = useState(
@@ -79,13 +82,16 @@ export default function ProfilePage() {
   const getUserData = async () => {
     const response = await fetch(`${API_BASE_URL}/profile`, {
       credentials: "include",
+      headers: { 
+        "Content-Type": "application/json",
+        'Authorization' :`Bearer ${await getToken()}`
+      }
     });
     if (!response.ok) {
       console.error("Error fetching user data");
       return;
     }
     const data = await response.json();
-    console.log("The data is "+ JSON.stringify(data));
     if(data.resume_uploaded_date) {
       setResumeUploadedDate(data.resume_uploaded_date);
     }
@@ -128,8 +134,9 @@ export default function ProfilePage() {
           //set the extracted pdf content to the database
           const response = await fetch(`${API_BASE_URL}/resume`, {
             method: "POST",
-            headers: {
+            headers: { 
               "Content-Type": "application/json",
+              'Authorization' :`Bearer ${await getToken()}`
             },
             body: JSON.stringify({ resume: text }),
             credentials: "include",
@@ -164,6 +171,11 @@ export default function ProfilePage() {
           method: "POST",
           body: formData,
           credentials: "include",
+          headers: { 
+            "Content-Type": "application/json",
+            'Authorization' :`Bearer ${await getToken()}`
+          }
+          
         });
 
         if (response.ok) {
@@ -215,10 +227,12 @@ export default function ProfilePage() {
 
   const handleUpdateJobTitle = async (jobTitle: string) => {
     try {
+  
       const response = await fetch(`${API_BASE_URL}/update-title`, {
         method: "POST",
-        headers: {
+        headers: { 
           "Content-Type": "application/json",
+          'Authorization' :`Bearer ${await getToken()}`
         },
         body: JSON.stringify({ jobTitle: jobTitle }),
         credentials: "include",
@@ -239,8 +253,9 @@ export default function ProfilePage() {
     try {
       const response = await fetch(`${API_BASE_URL}/update-location`, {
         method: "POST",
-        headers: {
+        headers: { 
           "Content-Type": "application/json",
+          'Authorization' :`Bearer ${await getToken()}`
         },
         body: JSON.stringify({ location: city }),
         credentials: "include",
@@ -271,8 +286,9 @@ export default function ProfilePage() {
     try {
       const response = await fetch(`${API_BASE_URL}/update-bio`, {
         method: "POST",
-        headers: {
+        headers: { 
           "Content-Type": "application/json",
+          'Authorization' :`Bearer ${await getToken()}`
         },
         body: JSON.stringify({ bio: bio }),
         credentials: "include",
@@ -293,9 +309,10 @@ export default function ProfilePage() {
     try {
       const response = await fetch(`${API_BASE_URL}/update-about`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+           headers: { 
+            "Content-Type": "application/json",
+            'Authorization' :`Bearer ${await getToken()}`
+          },
         body: JSON.stringify({ about: about }),
         credentials: "include",
       });
