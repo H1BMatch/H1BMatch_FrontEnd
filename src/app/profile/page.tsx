@@ -172,7 +172,6 @@ export default function ProfilePage() {
           body: formData,
           credentials: "include",
           headers: { 
-            "Content-Type": "application/json",
             'Authorization' :`Bearer ${await getToken()}`
           }
           

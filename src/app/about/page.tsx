@@ -107,7 +107,7 @@ export default function AboutUsPage() {
   const developers = [
     {
       name: "Bikash Acharya",
-      role: "Full Stack Engineer",
+      role: "Full Stack Engineer | Sole Maintainer and Overseer of the Project (Currently Upgrading and Maintaining)",
       email: "sebikash10@gmail.com",
       photo: "https://media.licdn.com/dms/image/v2/D5603AQHmJozR8AMzJA/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1666404518370?e=1738800000&v=beta&t=1Zo2k3OLQf5BPgH2vpr-flwhmSgZET44F-qhc2WPnko",
       description: "Software Development & Data Science Enthusiast | Computer Science & Data Science Graduate NKU (Dec '24)"

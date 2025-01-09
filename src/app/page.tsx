@@ -18,7 +18,7 @@ export default function LandingPage() {
   }, [isSignedIn, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white flex flex-col">
       <header className="container mx-auto px-4 py-8">
         <nav className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-blue-600">JobMatcher</h1>
@@ -27,8 +27,8 @@ export default function LandingPage() {
           </Link>
         </nav>
       </header>
-
-      <main className="container mx-auto px-4 py-16 text-center">
+  
+      <main className="container mx-auto px-4 py-16 text-center flex-grow">
         <h2 className="text-4xl font-bold mb-6">Find Your Perfect Job Match</h2>
         <p className="text-xl mb-8 max-w-2xl mx-auto">
           JobMatcher uses advanced AI to analyze your resume and match you with
@@ -40,17 +40,16 @@ export default function LandingPage() {
             Sign In and Match with Jobs
           </Button>
         </Link>
+        <br />
+        <br />
+        <p className='mt-3'><span className='text-2xl font-bold mt-3'>Test Account </span><br /><span className='text-blue-500'>Email: jobmatcher@test.com </span><br /><span className='text-blue-500'>Password: jobmatcher@123</span></p>
       </main>
-
+  
       <section className="container mx-auto px-4 py-16">
-        <h3 className="text-2xl font-semibold mb-8 text-center">
-          How It Works
-        </h3>
+        <h3 className="text-2xl font-semibold mb-8 text-center">How It Works</h3>
         <div className="grid md:grid-cols-3 gap-8">
           <div className="bg-white p-6 rounded-lg shadow-md">
-            <h4 className="text-xl font-semibold mb-4">
-              1. Upload Your Resume
-            </h4>
+            <h4 className="text-xl font-semibold mb-4">1. Upload Your Resume</h4>
             <p>
               Simply upload your resume, and our AI will analyze your skills and
               experience.
@@ -72,12 +71,13 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      <footer className="bg-blue-600 text-white py-8">
+  
+      <footer className="bg-blue-600 text-white py-8 w-full">
         <div className="container mx-auto px-4 text-center">
-          <p>&copy; 2023 JobMatcher. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} JobMatcher. All rights reserved.</p>
         </div>
       </footer>
     </div>
   );
+  
 }

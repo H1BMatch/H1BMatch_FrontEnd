@@ -1,6 +1,4 @@
 {
-  "/jobsApplied/page": "app/jobsApplied/page.js",
-  "/match/page": "app/match/page.js",
-  "/profile/page": "app/profile/page.js",
+  "/page": "app/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js"
 }
